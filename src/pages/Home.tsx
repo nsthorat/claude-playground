@@ -38,10 +38,10 @@ const miniApps: MiniApp[] = [
   {
     id: 'audio',
     title: 'Audio Visualizer',
-    description: 'Web Audio API visualization',
+    description: '3D audio visualizations with Galaxy & DNA modes',
     icon: <Music className="w-6 h-6" />,
     path: '/audio',
-    status: 'coming-soon',
+    status: 'available',
     gradient: 'from-accent-purple/20 to-accent-red/20',
     size: 'small',
   },
