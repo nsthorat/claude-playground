@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import Home from './pages/Home'
 import SensorDiagnostics from './pages/sensors'
+import AudioVisualizer from './pages/audio'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -11,6 +12,7 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/sensors" element={<SensorDiagnostics />} />
+        <Route path="/audio" element={<AudioVisualizer />} />
       </Routes>
     </HashRouter>
   </StrictMode>,
