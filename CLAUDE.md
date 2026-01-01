@@ -1,6 +1,6 @@
-# Web API Playground
+# Nikhil's Apps
 
-A collection of mini-apps demonstrating browser Web APIs, built with React, Vite, and Tailwind CSS.
+A collection of mini apps and experiments, built with React, Vite, and Tailwind CSS.
 
 ## Project Structure
 

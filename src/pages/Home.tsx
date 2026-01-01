@@ -151,10 +151,10 @@ export default function Home() {
         {/* Header */}
         <header className="text-center mb-12" style={{ animation: 'fadeInUp 0.6s ease-out' }}>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent mb-4">
-            Web API Playground
+            Nikhil's Apps
           </h1>
           <p className="text-text-secondary text-lg">
-            Explore browser capabilities with interactive demos
+            A collection of mini apps and experiments
           </p>
         </header>
 
