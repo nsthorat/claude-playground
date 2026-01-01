@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 
 type SensorStatus = 'unknown' | 'checking' | 'available' | 'unavailable' | 'granted' | 'denied' | 'prompt'
 
@@ -31,6 +33,16 @@ const styles: Record<string, CSSProperties> = {
     maxWidth: '600px',
     margin: '0 auto',
   },
+  backLink: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    color: 'var(--color-text-secondary)',
+    textDecoration: 'none',
+    fontSize: '0.875rem',
+    marginBottom: '16px',
+    transition: 'color 0.2s',
+  },
   header: {
     textAlign: 'center',
     marginBottom: '32px',
@@ -47,7 +59,7 @@ const styles: Record<string, CSSProperties> = {
     letterSpacing: '-0.02em',
   },
   subtitle: {
-    color: 'var(--text-secondary)',
+    color: 'var(--color-text-secondary)',
     fontSize: '0.9rem',
     marginTop: '8px',
     fontWeight: 300,
@@ -58,17 +70,17 @@ const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontSize: '0.7rem',
     fontWeight: 600,
-    color: 'var(--text-muted)',
+    color: 'var(--color-text-muted)',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.1em',
     marginBottom: '12px',
     paddingLeft: '4px',
   },
   card: {
-    background: 'var(--bg-card)',
+    background: 'var(--color-bg-card)',
     borderRadius: '16px',
     padding: '20px',
-    border: '1px solid var(--border-subtle)',
+    border: '1px solid var(--color-border-subtle)',
     marginBottom: '12px',
     transition: 'all 0.2s ease',
   },
@@ -101,14 +113,14 @@ const styles: Record<string, CSSProperties> = {
     marginTop: '12px',
   },
   dataItem: {
-    background: 'var(--bg-secondary)',
+    background: 'var(--color-bg-secondary)',
     borderRadius: '8px',
     padding: '10px',
     textAlign: 'center' as const,
   },
   dataLabel: {
     fontSize: '0.65rem',
-    color: 'var(--text-muted)',
+    color: 'var(--color-text-muted)',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
     marginBottom: '4px',
@@ -117,7 +129,7 @@ const styles: Record<string, CSSProperties> = {
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: '0.85rem',
     fontWeight: 700,
-    color: 'var(--accent-cyan)',
+    color: 'var(--color-accent-cyan)',
   },
   button: {
     width: '100%',
@@ -125,7 +137,7 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: '12px',
     border: 'none',
     background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(170, 102, 255, 0.15))',
-    color: 'var(--text-primary)',
+    color: 'var(--color-text-primary)',
     fontSize: '0.9rem',
     fontWeight: 600,
     cursor: 'pointer',
@@ -138,12 +150,12 @@ const styles: Record<string, CSSProperties> = {
   },
   description: {
     fontSize: '0.8rem',
-    color: 'var(--text-secondary)',
+    color: 'var(--color-text-secondary)',
     lineHeight: 1.5,
   },
   unavailableNote: {
     fontSize: '0.75rem',
-    color: 'var(--text-muted)',
+    color: 'var(--color-text-muted)',
     fontStyle: 'italic' as const,
     marginTop: '8px',
   },
@@ -167,7 +179,7 @@ const formatNumber = (n: number | null, decimals = 1): string => {
   return n.toFixed(decimals)
 }
 
-export default function App() {
+export default function SensorDiagnostics() {
   const [motionStatus, setMotionStatus] = useState<SensorStatus>('unknown')
   const [orientationStatus, setOrientationStatus] = useState<SensorStatus>('unknown')
   const [geoStatus, setGeoStatus] = useState<SensorStatus>('unknown')
@@ -185,24 +197,13 @@ export default function App() {
     touch: { force: null, touches: 0 },
   })
 
-  // Check API availability on mount
   useEffect(() => {
-    // Vibration
     setVibrationStatus('vibrate' in navigator ? 'available' : 'unavailable')
-
-    // Bluetooth
     setBluetoothStatus('bluetooth' in navigator ? 'available' : 'unavailable')
-
-    // NFC
     setNfcStatus('NDEFReader' in window ? 'available' : 'unavailable')
-
-    // Battery
     setBatteryStatus('getBattery' in navigator ? 'available' : 'unavailable')
-
-    // Touch force (basic check)
     setTouchStatus('ontouchstart' in window ? 'available' : 'unavailable')
 
-    // Motion/Orientation - check if API exists
     if ('DeviceMotionEvent' in window) {
       setMotionStatus('prompt')
     } else {
@@ -215,14 +216,12 @@ export default function App() {
       setOrientationStatus('unavailable')
     }
 
-    // Geolocation
     if ('geolocation' in navigator) {
       setGeoStatus('prompt')
     } else {
       setGeoStatus('unavailable')
     }
 
-    // Camera
     if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
       setCameraStatus('prompt')
     } else {
@@ -230,7 +229,6 @@ export default function App() {
     }
   }, [])
 
-  // Touch handlers
   useEffect(() => {
     const handleTouch = (e: TouchEvent) => {
       const touch = e.touches[0]
@@ -291,7 +289,6 @@ export default function App() {
           setMotionStatus('denied')
         }
       } else {
-        // Non-iOS, permission not needed
         setMotionStatus('granted')
         window.addEventListener('devicemotion', (e) => {
           setSensorData(prev => ({
@@ -398,16 +395,19 @@ export default function App() {
 
   return (
     <div style={styles.container}>
+      <Link to="/" style={styles.backLink} className="hover:text-accent-cyan">
+        <ArrowLeft className="w-4 h-4" />
+        Back to Home
+      </Link>
+
       <header style={styles.header}>
         <h1 style={styles.title}>Sensor Diagnostics</h1>
         <p style={styles.subtitle}>iOS Web API Compatibility Test</p>
       </header>
 
-      {/* Permission Required */}
       <section style={{ ...styles.section, ...getAnimationDelay(0) }}>
         <h2 style={styles.sectionTitle}>Requires Permission</h2>
 
-        {/* Motion */}
         <div style={{ ...styles.card, ...getAnimationDelay(1) }}>
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
@@ -442,7 +442,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Orientation */}
         <div style={{ ...styles.card, ...getAnimationDelay(2) }}>
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
@@ -477,7 +476,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Geolocation */}
         <div style={{ ...styles.card, ...getAnimationDelay(3) }}>
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
@@ -512,7 +510,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Camera */}
         <div style={{ ...styles.card, ...getAnimationDelay(4) }}>
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
@@ -532,11 +529,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* Always Available */}
       <section style={{ ...styles.section, ...getAnimationDelay(5) }}>
         <h2 style={styles.sectionTitle}>Always Available</h2>
 
-        {/* Touch Force */}
         <div style={{ ...styles.card, ...getAnimationDelay(6) }}>
           <div style={styles.cardHeader}>
             <h3 style={styles.cardTitle}>
@@ -568,7 +563,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* Not Supported */}
       <section style={{ ...styles.section, ...getAnimationDelay(7) }}>
         <h2 style={styles.sectionTitle}>Not Supported on iOS Safari</h2>
 
@@ -629,7 +623,7 @@ export default function App() {
         </div>
       </section>
 
-      <footer style={{ textAlign: 'center', marginTop: '40px', color: 'var(--text-muted)', fontSize: '0.75rem', ...getAnimationDelay(12) }}>
+      <footer style={{ textAlign: 'center', marginTop: '40px', color: 'var(--color-text-muted)', fontSize: '0.75rem', ...getAnimationDelay(12) }}>
         <p>Built for iOS Safari sensor testing</p>
         <p style={{ fontFamily: "'JetBrains Mono', monospace", marginTop: '4px' }}>
           {new Date().toLocaleDateString()}

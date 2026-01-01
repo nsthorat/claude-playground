@@ -1,24 +1,31 @@
-:root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: #1a1a24;
-  --bg-card-hover: #22222e;
-  --text-primary: #f0f0f5;
-  --text-secondary: #8888a0;
-  --text-muted: #555566;
-  --accent-cyan: #00d4ff;
-  --accent-green: #00ff88;
-  --accent-red: #ff4466;
-  --accent-yellow: #ffcc00;
-  --accent-purple: #aa66ff;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-accent: rgba(0, 212, 255, 0.3);
+@import "tailwindcss";
 
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+@theme inline {
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #12121a;
+  --color-bg-card: #1a1a24;
+  --color-bg-card-hover: #22222e;
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #8888a0;
+  --color-text-muted: #555566;
+  --color-accent-cyan: #00d4ff;
+  --color-accent-green: #00ff88;
+  --color-accent-red: #ff4466;
+  --color-accent-yellow: #ffcc00;
+  --color-accent-purple: #aa66ff;
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-accent: rgba(0, 212, 255, 0.3);
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  font-family: var(--font-display);
   line-height: 1.6;
   font-weight: 400;
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -37,17 +44,13 @@ body {
   background:
     radial-gradient(ellipse at 20% 0%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 100%, rgba(170, 102, 255, 0.06) 0%, transparent 50%),
-    var(--bg-primary);
+    var(--color-bg-primary);
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-}
-
-.mono {
-  font-family: 'JetBrains Mono', monospace;
 }
 
 @keyframes fadeInUp {
@@ -69,4 +72,15 @@ body {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
