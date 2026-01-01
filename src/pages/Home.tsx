@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { MagicCard } from '@/components/ui/magic-card'
-import { Smartphone, Palette, Music, Clock, FileText, Gamepad2 } from 'lucide-react'
+import { Smartphone, Palette, Music, Clock, FileText, Gamepad2, ChefHat } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MiniApp {
@@ -43,6 +43,16 @@ const miniApps: MiniApp[] = [
     path: '/audio',
     status: 'available',
     gradient: 'from-accent-purple/20 to-accent-red/20',
+    size: 'small',
+  },
+  {
+    id: 'ribeye',
+    title: 'Ribeye Dinner',
+    description: '70s cookbook-style cooking timer for the perfect steak dinner',
+    icon: <ChefHat className="w-6 h-6" />,
+    path: '/ribeye',
+    status: 'available',
+    gradient: 'from-orange-500/20 to-yellow-500/20',
     size: 'small',
   },
   {
