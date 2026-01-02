@@ -17,6 +17,7 @@ export default defineConfig({
         audio: resolve(__dirname, 'audio/index.html'),
         ribeye: resolve(__dirname, 'ribeye/index.html'),
         fluid: resolve(__dirname, 'fluid/index.html'),
+        istanbul: resolve(__dirname, 'istanbul/index.html'),
         water: resolve(__dirname, 'water/index.html'),
       },
     },
