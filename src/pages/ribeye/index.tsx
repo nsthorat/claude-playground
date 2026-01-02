@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft, Play, Pause, RotateCcw, Check } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ArrowLeft, Play, Pause, RotateCcw, Check, ChefHat } from 'lucide-react'
 
 const BASE_PATH = '/claude-playground'
 import { cn } from '@/lib/utils'
 
 interface TimelineStep {
   id: string
-  minutesBefore: number
-  duration: number // duration in minutes for this step
+  duration: number // duration in minutes
   title: string
   component: 'steak' | 'potatoes' | 'chimichurri' | 'all'
   description: string
@@ -28,7 +27,6 @@ interface ComponentIngredients {
 const timeline: TimelineStep[] = [
   {
     id: '1',
-    minutesBefore: 90,
     duration: 15,
     title: 'Season & Prep',
     component: 'all',
@@ -43,7 +41,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '2',
-    minutesBefore: 75,
     duration: 20,
     title: 'Boil Potatoes',
     component: 'potatoes',
@@ -57,7 +54,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '3',
-    minutesBefore: 55,
     duration: 5,
     title: 'Drain & Dry',
     component: 'potatoes',
@@ -70,7 +66,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '4',
-    minutesBefore: 50,
     duration: 15,
     title: 'Smash & Roast',
     component: 'potatoes',
@@ -85,7 +80,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '5',
-    minutesBefore: 35,
     duration: 10,
     title: 'Rotate Pan',
     component: 'potatoes',
@@ -97,7 +91,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '6',
-    minutesBefore: 25,
     duration: 5,
     title: 'Heat Cast Iron',
     component: 'steak',
@@ -111,7 +104,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '7',
-    minutesBefore: 20,
     duration: 5,
     title: 'Sear Side One',
     component: 'steak',
@@ -125,7 +117,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '8',
-    minutesBefore: 15,
     duration: 5,
     title: 'Flip & Baste',
     component: 'steak',
@@ -140,7 +131,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '9',
-    minutesBefore: 10,
     duration: 8,
     title: 'Rest & Garnish',
     component: 'all',
@@ -154,7 +144,6 @@ const timeline: TimelineStep[] = [
   },
   {
     id: '10',
-    minutesBefore: 2,
     duration: 2,
     title: 'Slice & Serve',
     component: 'all',
@@ -224,78 +213,134 @@ const colors = {
   olive: '#606C38',
 }
 
-export default function RibeyeRecipe() {
-  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
-  const [dinnerTime, setDinnerTime] = useState('18:30')
-  const [isRunning, setIsRunning] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null)
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
 
+function formatElapsed(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  if (mins >= 60) {
+    const hrs = Math.floor(mins / 60)
+    const remainMins = mins % 60
+    return `${hrs}h ${remainMins}m`
+  }
+  return `${mins}m ${secs}s`
+}
+
+export default function RibeyeRecipe() {
+  const [activeStepIndex, setActiveStepIndex] = useState<number | null>(null)
+  const [stepTimers, setStepTimers] = useState<Record<string, number>>({})
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
+  const [isRunning, setIsRunning] = useState(false)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Initialize step timers
+  useEffect(() => {
+    const timers: Record<string, number> = {}
+    timeline.forEach(step => {
+      timers[step.id] = step.duration * 60 // Convert to seconds
+    })
+    setStepTimers(timers)
+  }, [])
+
+  // Main timer effect
   useEffect(() => {
     if (!isRunning) return
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000)
+
+    const interval = setInterval(() => {
+      setElapsedTime(prev => prev + 1)
+
+      // Tick down active step timer
+      if (activeStepIndex !== null) {
+        const stepId = timeline[activeStepIndex].id
+        setStepTimers(prev => {
+          const current = prev[stepId]
+          if (current <= 0) return prev
+
+          // Play sound when timer hits 0
+          if (current === 1) {
+            playTimerSound()
+          }
+
+          return { ...prev, [stepId]: current - 1 }
+        })
+      }
+    }, 1000)
+
     return () => clearInterval(interval)
-  }, [isRunning])
+  }, [isRunning, activeStepIndex])
 
-  const getDinnerDate = useCallback(() => {
-    const [hours, minutes] = dinnerTime.split(':').map(Number)
-    const dinner = new Date()
-    dinner.setHours(hours, minutes, 0, 0)
-    if (dinner < new Date()) {
-      dinner.setDate(dinner.getDate() + 1)
+  const playTimerSound = () => {
+    // Create a simple beep using Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      oscillator.frequency.value = 800
+      oscillator.type = 'sine'
+      gainNode.gain.value = 0.3
+
+      oscillator.start()
+      setTimeout(() => {
+        oscillator.stop()
+        audioContext.close()
+      }, 200)
+    } catch (e) {
+      // Audio not supported
     }
-    return dinner
-  }, [dinnerTime])
-
-  const getStepTime = useCallback((minutesBefore: number) => {
-    return new Date(getDinnerDate().getTime() - minutesBefore * 60 * 1000)
-  }, [getDinnerDate])
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
   }
 
-  const getCountdown = (minutesBefore: number) => {
-    const stepTime = getStepTime(minutesBefore)
-    const diff = stepTime.getTime() - currentTime.getTime()
-
-    if (diff <= 0) {
-      const overBy = Math.abs(diff)
-      const mins = Math.floor(overBy / 60000)
-      if (mins < 1) return 'NOW!'
-      return `${mins}m ago`
+  const startCooking = () => {
+    setIsRunning(true)
+    if (activeStepIndex === null) {
+      setActiveStepIndex(0)
     }
-
-    const totalMins = Math.floor(diff / 60000)
-    const hours = Math.floor(totalMins / 60)
-    const mins = totalMins % 60
-
-    if (hours > 0) return `${hours}h ${mins}m`
-    return `${mins}m`
   }
 
-  const isStepActive = (minutesBefore: number, duration: number) => {
-    const stepTime = getStepTime(minutesBefore)
-    const endTime = new Date(stepTime.getTime() + duration * 60 * 1000)
-    return currentTime >= stepTime && currentTime < endTime
+  const pauseCooking = () => {
+    setIsRunning(false)
   }
 
-  const isStepPast = (minutesBefore: number, duration: number) => {
-    const endTime = new Date(getStepTime(minutesBefore).getTime() + duration * 60 * 1000)
-    return currentTime >= endTime
-  }
-
-  const toggleStep = (id: string) => {
-    setCompletedSteps(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
+  const resetAll = () => {
+    setIsRunning(false)
+    setActiveStepIndex(null)
+    setElapsedTime(0)
+    setCompletedSteps(new Set())
+    const timers: Record<string, number> = {}
+    timeline.forEach(step => {
+      timers[step.id] = step.duration * 60
     })
+    setStepTimers(timers)
+  }
+
+  const completeCurrentStep = () => {
+    if (activeStepIndex === null) return
+
+    const currentStep = timeline[activeStepIndex]
+    setCompletedSteps(prev => new Set([...prev, currentStep.id]))
+
+    // Move to next step
+    if (activeStepIndex < timeline.length - 1) {
+      setActiveStepIndex(activeStepIndex + 1)
+    } else {
+      setActiveStepIndex(null)
+    }
+  }
+
+  const jumpToStep = (index: number) => {
+    if (!isRunning) {
+      startCooking()
+    }
+    setActiveStepIndex(index)
   }
 
   const getComponentStyle = (component: string) => {
@@ -308,6 +353,9 @@ export default function RibeyeRecipe() {
   }
 
   const progress = (completedSteps.size / timeline.length) * 100
+  const totalTime = timeline.reduce((acc, step) => acc + step.duration, 0)
+  const activeStep = activeStepIndex !== null ? timeline[activeStepIndex] : null
+  const activeStepTimeRemaining = activeStep ? stepTimers[activeStep.id] : 0
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.cream }}>
@@ -359,40 +407,96 @@ export default function RibeyeRecipe() {
               borderColor: colors.orange
             }}
           >
+            {/* Active Step Timer - Always visible when cooking */}
+            {isRunning && activeStep && (
+              <div
+                className="mb-4 p-4 rounded-lg text-center"
+                style={{ backgroundColor: colors.orange + '15' }}
+              >
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span
+                    className="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: getComponentStyle(activeStep.component).bg,
+                      color: getComponentStyle(activeStep.component).text
+                    }}
+                  >
+                    STEP {activeStepIndex! + 1}
+                  </span>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'Libre Baskerville, serif',
+                      color: colors.brown
+                    }}
+                  >
+                    {activeStep.title}
+                  </span>
+                </div>
+
+                <div
+                  className={cn(
+                    "text-5xl font-mono font-bold mb-2",
+                    activeStepTimeRemaining <= 30 && activeStepTimeRemaining > 0 && "animate-pulse"
+                  )}
+                  style={{
+                    color: activeStepTimeRemaining <= 0 ? colors.avocado :
+                           activeStepTimeRemaining <= 30 ? colors.orange : colors.brown
+                  }}
+                >
+                  {activeStepTimeRemaining <= 0 ? "DONE!" : formatTime(activeStepTimeRemaining)}
+                </div>
+
+                <button
+                  onClick={completeCurrentStep}
+                  className="px-6 py-2 rounded-full font-bold text-white transition-transform hover:scale-105"
+                  style={{ backgroundColor: colors.avocado }}
+                >
+                  <Check className="w-4 h-4 inline mr-2" />
+                  {activeStepIndex === timeline.length - 1 ? "Finish!" : "Next Step"}
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <label
-                  className="text-sm font-semibold"
-                  style={{ color: colors.brown }}
-                >
-                  Dinner at:
-                </label>
-                <input
-                  type="time"
-                  value={dinnerTime}
-                  onChange={(e) => setDinnerTime(e.target.value)}
-                  className="border-2 rounded-lg px-3 py-2 font-mono text-lg"
-                  style={{
-                    borderColor: colors.mustard,
-                    color: colors.brown
-                  }}
-                />
+                {isRunning ? (
+                  <div className="text-center">
+                    <div className="text-xs" style={{ color: colors.rust }}>Elapsed</div>
+                    <div className="font-mono text-xl font-bold" style={{ color: colors.brown }}>
+                      {formatElapsed(elapsedTime)}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2" style={{ color: colors.brown }}>
+                    <ChefHat className="w-5 h-5" />
+                    <span className="text-sm">~{totalTime} min total</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
+                {!isRunning ? (
+                  <button
+                    onClick={startCooking}
+                    className="flex items-center gap-2 px-5 py-2 rounded-full font-bold text-white transition-transform hover:scale-105"
+                    style={{ backgroundColor: colors.orange }}
+                  >
+                    <Play className="w-4 h-4" />
+                    Start Cooking
+                  </button>
+                ) : (
+                  <button
+                    onClick={pauseCooking}
+                    className="flex items-center gap-2 px-5 py-2 rounded-full font-bold text-white transition-transform hover:scale-105"
+                    style={{ backgroundColor: colors.avocado }}
+                  >
+                    <Pause className="w-4 h-4" />
+                    Pause
+                  </button>
+                )}
                 <button
-                  onClick={() => setIsRunning(!isRunning)}
-                  className="flex items-center gap-2 px-5 py-2 rounded-full font-bold text-white transition-transform hover:scale-105"
-                  style={{ backgroundColor: isRunning ? colors.avocado : colors.orange }}
-                >
-                  {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                  {isRunning ? 'Pause' : 'Start'}
-                </button>
-                <button
-                  onClick={() => {
-                    setCompletedSteps(new Set())
-                    setIsRunning(false)
-                  }}
+                  onClick={resetAll}
                   className="p-2 rounded-full transition-colors"
                   style={{ color: colors.brown }}
                   title="Reset"
@@ -401,14 +505,6 @@ export default function RibeyeRecipe() {
                 </button>
               </div>
             </div>
-
-            {isRunning && (
-              <div className="mt-3 text-center">
-                <span style={{ color: colors.rust }} className="font-mono text-2xl font-bold">
-                  {formatTime(currentTime)}
-                </span>
-              </div>
-            )}
 
             {/* Progress bar */}
             <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ backgroundColor: colors.mustard + '40' }}>
@@ -508,55 +604,54 @@ export default function RibeyeRecipe() {
               color: colors.brown
             }}
           >
-            ~ The Timeline ~
+            ~ The Steps ~
           </h2>
 
           <div className="space-y-4">
             {timeline.map((step, index) => {
               const completed = completedSteps.has(step.id)
-              const active = isRunning && isStepActive(step.minutesBefore, step.duration)
-              const past = isRunning && isStepPast(step.minutesBefore, step.duration)
+              const isActive = activeStepIndex === index
               const componentStyle = getComponentStyle(step.component)
-              const stepTime = getStepTime(step.minutesBefore)
+              const timeRemaining = stepTimers[step.id] || 0
 
               return (
                 <div
                   key={step.id}
                   className={cn(
-                    'relative border-2 rounded-xl overflow-hidden transition-all',
-                    active && 'ring-4 ring-offset-2 scale-[1.02]'
+                    'relative border-2 rounded-xl overflow-hidden transition-all cursor-pointer',
+                    isActive && 'ring-4 ring-offset-2 scale-[1.02]'
                   )}
                   style={{
                     backgroundColor: completed ? colors.avocado + '15' : '#fff',
-                    borderColor: active ? colors.orange : colors.brown + '40',
+                    borderColor: isActive ? colors.orange : colors.brown + '40',
                     ringColor: colors.orange,
-                    opacity: completed && !active ? 0.7 : 1
+                    opacity: completed && !isActive ? 0.7 : 1
                   }}
+                  onClick={() => !completed && jumpToStep(index)}
                 >
                   {/* Step Header */}
                   <div
                     className="flex items-center justify-between px-4 py-3"
                     style={{
-                      backgroundColor: active ? colors.orange + '20' : colors.cream
+                      backgroundColor: isActive ? colors.orange + '20' : colors.cream
                     }}
                   >
                     <div className="flex items-center gap-3">
-                      {/* Checkbox */}
-                      <button
-                        onClick={() => toggleStep(step.id)}
+                      {/* Step number */}
+                      <div
                         className={cn(
-                          'w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all',
-                          completed ? 'scale-110' : 'hover:scale-105'
+                          'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm',
+                          completed && 'scale-110'
                         )}
                         style={{
-                          backgroundColor: completed ? colors.avocado : 'transparent',
-                          borderColor: completed ? colors.avocado : colors.brown
+                          backgroundColor: completed ? colors.avocado : isActive ? colors.orange : colors.brown + '20',
+                          color: completed || isActive ? '#fff' : colors.brown
                         }}
                       >
-                        {completed && <Check className="w-4 h-4 text-white" />}
-                      </button>
+                        {completed ? <Check className="w-4 h-4" /> : index + 1}
+                      </div>
 
-                      {/* Step number & title */}
+                      {/* Step title */}
                       <div>
                         <span
                           className="text-xs font-bold px-2 py-0.5 rounded-full mr-2"
@@ -582,66 +677,57 @@ export default function RibeyeRecipe() {
                       </div>
                     </div>
 
-                    {/* Timer */}
+                    {/* Timer display */}
                     <div className="text-right">
                       <div
-                        className="font-mono text-sm"
-                        style={{ color: colors.rust }}
+                        className={cn(
+                          "font-mono text-lg font-bold",
+                          isActive && timeRemaining <= 30 && timeRemaining > 0 && "animate-pulse"
+                        )}
+                        style={{
+                          color: completed ? colors.avocado :
+                                 isActive && timeRemaining <= 0 ? colors.avocado :
+                                 isActive && timeRemaining <= 30 ? colors.orange :
+                                 isActive ? colors.rust : colors.brown + '80'
+                        }}
                       >
-                        {formatTime(stepTime)}
+                        {completed ? '✓' :
+                         isActive && timeRemaining <= 0 ? 'DONE!' :
+                         formatTime(timeRemaining)}
                       </div>
-                      {isRunning && !completed && (
-                        <div
-                          className={cn(
-                            'text-xs font-bold',
-                            active && 'animate-pulse'
-                          )}
-                          style={{
-                            color: active ? colors.orange : colors.olive
-                          }}
-                        >
-                          {getCountdown(step.minutesBefore)}
-                        </div>
-                      )}
+                      <div className="text-xs" style={{ color: colors.rust }}>
+                        {step.duration} min
+                      </div>
                     </div>
                   </div>
 
-                  {/* Step Content */}
-                  <div className="px-4 py-3">
-                    <p
-                      className="italic mb-3"
-                      style={{
-                        fontFamily: 'Libre Baskerville, serif',
-                        color: colors.rust
-                      }}
-                    >
-                      {step.description}
-                    </p>
+                  {/* Step Content - expanded when active */}
+                  {(isActive || !isRunning) && (
+                    <div className="px-4 py-3">
+                      <p
+                        className="italic mb-3"
+                        style={{
+                          fontFamily: 'Libre Baskerville, serif',
+                          color: colors.rust
+                        }}
+                      >
+                        {step.description}
+                      </p>
 
-                    <ul className="space-y-1">
-                      {step.details.map((detail, i) => (
-                        <li
-                          key={i}
-                          className="text-sm flex items-start gap-2"
-                          style={{ color: colors.brown }}
-                        >
-                          <span style={{ color: colors.orange }}>•</span>
-                          {detail}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* Duration badge */}
-                    <div
-                      className="mt-3 inline-block text-xs font-mono px-2 py-1 rounded"
-                      style={{
-                        backgroundColor: colors.mustard + '30',
-                        color: colors.brown
-                      }}
-                    >
-                      ~{step.duration} min
+                      <ul className="space-y-1">
+                        {step.details.map((detail, i) => (
+                          <li
+                            key={i}
+                            className="text-sm flex items-start gap-2"
+                            style={{ color: colors.brown }}
+                          >
+                            <span style={{ color: colors.orange }}>•</span>
+                            {detail}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
+                  )}
                 </div>
               )
             })}
@@ -669,6 +755,9 @@ export default function RibeyeRecipe() {
               <p style={{ color: colors.rust }}>
                 Enjoy your perfectly cooked ribeye
               </p>
+              <p className="mt-2 font-mono text-sm" style={{ color: colors.olive }}>
+                Total time: {formatElapsed(elapsedTime)}
+              </p>
             </div>
           )}
         </section>
@@ -685,7 +774,7 @@ export default function RibeyeRecipe() {
               color: colors.rust
             }}
           >
-            90 minutes from start to plate • Serves 1–2
+            ~{totalTime} minutes from start to plate • Serves 1–2
           </p>
         </footer>
       </main>
