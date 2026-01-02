@@ -1,0 +1,6 @@
+# Rewrite /claude-playground/* to /* for Cloudflare Pages previews
+# This makes asset paths work since the build uses /claude-playground/ base path
+/claude-playground/* /:splat 200
+
+# Redirect root to the base path
+/ /claude-playground/ 302

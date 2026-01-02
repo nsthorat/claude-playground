@@ -8,9 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "publish": "bun run build && bun run generate-og",
-    "generate-og": "bun scripts/generate-og-images.ts",
-    "postinstall": "git config core.hooksPath .hooks"
+    "publish": "bun run build",
+    "generate-og": "bun scripts/generate-og-images.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

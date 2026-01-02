@@ -960,9 +960,6 @@ function ItinerarySection() {
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-text-primary mb-2">5-Day Itinerary</h2>
         <p className="text-text-secondary">January 3-8 | Galata-based adventure</p>
-        <p className="text-sm text-orange-400 mt-2 flex items-center justify-center gap-2">
-          <Heart className="w-4 h-4" /> Curated with love
-        </p>
       </div>
 
       {/* Quick Jump */}

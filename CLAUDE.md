@@ -218,14 +218,11 @@ bun run preview   # Preview production build
 
 ## Deployment
 
-GitHub Pages serves from the `docs/` folder on the `main` branch.
+Deployment is fully automated via GitHub Actions. When you push to `main`, the workflow builds and deploys to GitHub Pages.
 
-**Pre-commit hook (automatic):** A git pre-commit hook runs `bun run publish` automatically before each commit and stages the `docs/` folder. The hook is enabled automatically via `postinstall` when you run `bun install`. This ensures the production build is always up to date.
+**PR Previews:** Cloudflare Pages is connected for automatic PR preview deployments. See [cloudflare-previews.md](./cloudflare-previews.md) for setup instructions.
 
-**Manual deployment:**
-1. Run `bun run publish` to build
-2. Commit the updated `docs/` folder
-3. Push to main branch
+**No need to commit build artifacts** - the `docs/` folder is gitignored and built in CI.
 
 URL: https://nikubaba.com/claude-playground/
 
@@ -278,13 +275,19 @@ Run with: `bun scripts/test-my-app.ts` (dev server must be running)
 
 ## OG Image Generation
 
-Generate social preview images for all apps:
+OG images are **checked into git** in the `public/` folder. They get copied to the build output automatically.
+
+**To regenerate OG images** (run manually when apps change visually):
 
 ```bash
-bun run generate-og
+bun run build              # Build first
+bun run generate-og        # Screenshots each app to public/*/og-image.png
+git add public/            # Commit the updated images
 ```
 
-This uses Playwright to screenshot each app and saves images to `docs/*/og-image.png`.
+Images are saved to:
+- `public/og-home.png` - Homepage
+- `public/{app}/og-image.png` - Each app (e.g., `public/sensors/og-image.png`)
 
 ## Architecture Notes
 
