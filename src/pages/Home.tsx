@@ -48,7 +48,7 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
         }}
       >
         {/* Preview Image */}
-        <div className="relative w-full aspect-[1200/630] overflow-hidden bg-bg-primary">
+        <div className="relative w-full aspect-[430/932] overflow-hidden bg-bg-primary">
           <img
             src={previewImage}
             alt={`${app.title} preview`}
@@ -57,18 +57,6 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-bg-card/90 via-bg-card/20 to-transparent" />
-
-          {/* Icon badge */}
-          <div
-            className={cn(
-              'absolute top-3 left-3 w-10 h-10 rounded-lg flex items-center justify-center',
-              'bg-gradient-to-br backdrop-blur-sm',
-              app.gradient,
-              'text-text-primary shadow-lg'
-            )}
-          >
-            {app.icon}
-          </div>
         </div>
 
         {/* Content */}
