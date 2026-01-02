@@ -21,7 +21,8 @@ function discoverApps(): { path: string; output: string }[] {
   const apps: { path: string; output: string }[] = []
 
   // Always add the home page first
-  apps.push({ path: '/', output: 'docs/og-home.png' })
+  // Images go to public/ which Vite copies to build output
+  apps.push({ path: '/', output: 'public/og-home.png' })
 
   // Parse each entry (e.g., sensors: resolve(__dirname, 'sensors/index.html'))
   const entryRegex = /(\w+):\s*resolve\(__dirname,\s*['"]([^'"]+)['"]\)/g
@@ -32,7 +33,7 @@ function discoverApps(): { path: string; output: string }[] {
     if (name !== 'main') {
       apps.push({
         path: `/${name}/`,
-        output: `docs/${name}/og-image.png`,
+        output: `public/${name}/og-image.png`,
       })
     }
   }
