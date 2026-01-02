@@ -220,7 +220,13 @@ bun run preview   # Preview production build
 
 GitHub Pages serves from the `docs/` folder on the `main` branch.
 
-**Pre-commit hook (automatic):** A git pre-commit hook runs `bun run publish` automatically before each commit and stages the `docs/` folder. This ensures the production build is always up to date.
+**Pre-commit hook:** A git pre-commit hook runs `bun run publish` automatically before each commit and stages the `docs/` folder. Enable it with:
+
+```bash
+git config core.hooksPath .hooks
+```
+
+This ensures the production build is always up to date.
 
 **Manual deployment:**
 1. Run `bun run publish` to build
