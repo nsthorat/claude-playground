@@ -11,7 +11,6 @@ interface MiniApp {
   path: string
   status: 'available' | 'coming-soon'
   gradient: string
-  size: 'large' | 'medium' | 'small'
   order?: number
 }
 
@@ -29,59 +28,74 @@ const discoveredApps: MiniApp[] = Object.values(appConfigModules)
 function AppCard({ app, index }: { app: MiniApp; index: number }) {
   const isAvailable = app.status === 'available'
 
+  // Construct preview image path from app path
+  const previewImage = `${BASE_PATH}${app.path}og-image.png`
+
   const content = (
     <MagicCard
       className={cn(
-        'group cursor-pointer',
-        app.size === 'large' ? 'col-span-2 row-span-2' : '',
+        'group cursor-pointer overflow-hidden',
         !isAvailable && 'opacity-60 cursor-not-allowed'
       )}
       gradientColor={app.gradient.includes('cyan') ? '#00d4ff' : '#aa66ff'}
     >
       <div
-        className={cn(
-          'p-6 h-full flex flex-col',
-          app.size === 'large' ? 'min-h-[200px]' : 'min-h-[120px]'
-        )}
+        className="h-full flex flex-col"
         style={{
           animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
         }}
       >
-        {/* Icon */}
-        <div
-          className={cn(
-            'w-12 h-12 rounded-xl flex items-center justify-center mb-4',
-            'bg-gradient-to-br',
-            app.gradient,
-            'text-text-primary',
-            'group-hover:scale-110 transition-transform duration-300'
-          )}
-        >
-          {app.icon}
+        {/* Preview Image */}
+        <div className="relative w-full aspect-[1200/630] overflow-hidden bg-bg-primary">
+          <img
+            src={previewImage}
+            alt={`${app.title} preview`}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-bg-card/90 via-bg-card/20 to-transparent" />
+
+          {/* Icon badge */}
+          <div
+            className={cn(
+              'absolute top-3 left-3 w-10 h-10 rounded-lg flex items-center justify-center',
+              'bg-gradient-to-br backdrop-blur-sm',
+              app.gradient,
+              'text-text-primary shadow-lg'
+            )}
+          >
+            {app.icon}
+          </div>
         </div>
 
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-text-primary mb-2 group-hover:text-accent-cyan transition-colors">
-          {app.title}
-        </h3>
+        {/* Content */}
+        <div className="p-4 flex flex-col flex-1">
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-text-primary mb-1 group-hover:text-accent-cyan transition-colors">
+            {app.title}
+          </h3>
 
-        {/* Description */}
-        <p className="text-sm text-text-secondary flex-1">
-          {app.description}
-        </p>
+          {/* Description */}
+          <p className="text-sm text-text-secondary flex-1 line-clamp-2">
+            {app.description}
+          </p>
 
-        {/* Status Badge */}
-        {!isAvailable && (
-          <span className="mt-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-text-muted/20 text-text-muted w-fit">
-            Coming Soon
-          </span>
-        )}
+          {/* Status Badge */}
+          <div className="mt-3">
+            {!isAvailable && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-text-muted/20 text-text-muted">
+                Coming Soon
+              </span>
+            )}
 
-        {isAvailable && (
-          <span className="mt-3 inline-flex items-center text-xs font-medium text-accent-cyan group-hover:translate-x-1 transition-transform">
-            Open →
-          </span>
-        )}
+            {isAvailable && (
+              <span className="inline-flex items-center text-xs font-medium text-accent-cyan group-hover:translate-x-1 transition-transform">
+                Open →
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </MagicCard>
   )
@@ -96,7 +110,7 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
 export default function Home() {
   return (
     <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <header className="text-center mb-12" style={{ animation: 'fadeInUp 0.6s ease-out' }}>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent mb-4">
@@ -107,17 +121,12 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* App Grid - 1 column on mobile, 2 on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {discoveredApps.map((app, index) => (
             <AppCard key={app.id} app={app} index={index} />
           ))}
         </div>
-
-        {/* Footer */}
-        <footer className="text-center mt-12 text-text-muted text-sm" style={{ animation: 'fadeInUp 0.6s ease-out 0.8s both' }}>
-          <p className="font-mono">Built with React + Vite + Tailwind</p>
-        </footer>
       </div>
     </div>
   )
