@@ -21,7 +21,8 @@ function discoverApps(): { path: string; output: string }[] {
   const apps: { path: string; output: string }[] = []
 
   // Always add the home page first
-  apps.push({ path: '/', output: 'docs/og-home.png' })
+  // Images go to public/ which Vite copies to build output
+  apps.push({ path: '/', output: 'public/og-home.png' })
 
   // Parse each entry (e.g., sensors: resolve(__dirname, 'sensors/index.html'))
   // Use the actual path from resolve() to support nested directories like recipes/ribeye
@@ -35,7 +36,7 @@ function discoverApps(): { path: string; output: string }[] {
       const dirPath = filePath.replace(/\/index\.html$/, '')
       apps.push({
         path: `/${dirPath}/`,
-        output: `docs/${dirPath}/og-image.png`,
+        output: `public/${dirPath}/og-image.png`,
       })
     }
   }

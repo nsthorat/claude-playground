@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "publish": "bun run build && bun run generate-og",
+    "publish": "bun run build",
     "generate-og": "bun scripts/generate-og-images.ts"
   },
   "dependencies": {
