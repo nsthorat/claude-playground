@@ -11,6 +11,7 @@ const apps = [
   { path: '/sensors/', output: 'docs/sensors/og-image.png' },
   { path: '/audio/', output: 'docs/audio/og-image.png' },
   { path: '/ribeye/', output: 'docs/ribeye/og-image.png' },
+  { path: '/fluid/', output: 'docs/fluid/og-image.png' },
 ]
 
 async function waitForServer(url: string, maxAttempts = 30): Promise<boolean> {
