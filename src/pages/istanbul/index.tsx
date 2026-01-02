@@ -247,6 +247,7 @@ const historicalSites = [
     fromGalata: { walking: '25 min', transit: '15 min (tram T1)', distance: '2.0 km' },
     coords: { lat: 41.0086, lng: 28.9802 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Hagia_Sophia',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Hagia_Sophia_%28228968325%29.jpeg',
     quickFacts: [
       'Built in just 5 years (532-537 AD)',
       'Largest cathedral in the world for nearly 1,000 years',
@@ -274,6 +275,7 @@ const historicalSites = [
     fromGalata: { walking: '25 min', transit: '15 min (tram T1)', distance: '2.1 km' },
     coords: { lat: 41.0054, lng: 28.9768 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Blue_Mosque,_Istanbul',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/03/Istanbul_%2834223582516%29_%28cropped%29.jpg',
     quickFacts: [
       'Over 20,000 handmade Iznik tiles',
       '6 minarets (controversial at the time)',
@@ -301,6 +303,7 @@ const historicalSites = [
     fromGalata: { walking: '30 min', transit: '20 min (tram T1)', distance: '2.4 km' },
     coords: { lat: 41.0115, lng: 28.9833 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Topkap%C4%B1_Palace',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Topkap%C4%B1_-_01.jpg',
     quickFacts: [
       'Home to 36 Ottoman sultans over 400 years',
       'Houses the 86-carat Spoonmaker\'s Diamond',
@@ -328,6 +331,7 @@ const historicalSites = [
     fromGalata: { walking: '20 min', transit: '12 min (tram T1)', distance: '1.8 km' },
     coords: { lat: 41.0084, lng: 28.9779 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Basilica_Cistern',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Cisterna_Bas%C3%ADlica%2C_Estambul%2C_Turqu%C3%ADa%2C_2024-09-28%2C_DD_58-60_HDR.jpg',
     quickFacts: [
       '336 marble columns, mostly recycled from ruins',
       'Could hold 80,000 cubic meters of water',
@@ -355,6 +359,7 @@ const historicalSites = [
     fromGalata: { walking: '2 min', transit: 'N/A', distance: '0.1 km' },
     coords: { lat: 41.0256, lng: 28.9744 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Galata_Tower',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Galata_tower_01_23.jpg',
     quickFacts: [
       'Built by Genoese merchants in 1348',
       '67 meters tall—once the tallest building in Istanbul',
@@ -382,6 +387,7 @@ const historicalSites = [
     fromGalata: { walking: '25 min', transit: '15 min (tram + walk)', distance: '1.9 km' },
     coords: { lat: 41.0162, lng: 28.9640 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/S%C3%BCleymaniye_Mosque',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/38/S%C3%BCleymaniyeMosqueIstanbul_%28cropped%29.jpg',
     quickFacts: [
       'Designed by the legendary architect Mimar Sinan',
       '10 balconies on minarets = Suleiman was 10th sultan',
@@ -409,6 +415,7 @@ const historicalSites = [
     fromGalata: { walking: '20 min', transit: '12 min (tram T1)', distance: '1.6 km' },
     coords: { lat: 41.0108, lng: 28.9680 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Grand_Bazaar,_Istanbul',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Istanbul_asv2021-11_img41_Grand_Bazaar.jpg',
     quickFacts: [
       'World\'s oldest and largest covered market',
       '4,000+ shops across 61 covered streets',
@@ -436,6 +443,7 @@ const historicalSites = [
     fromGalata: { walking: '25 min', transit: '10 min (tram T1)', distance: '2.0 km' },
     coords: { lat: 41.0391, lng: 29.0003 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Dolmabah%C3%A7e_Palace',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/85/Dolmabahce_Istanbul_Turkey.jpg',
     quickFacts: [
       'Largest palace in Turkey (45,000 m²)',
       '4.5-ton crystal chandelier—world\'s largest',
@@ -462,7 +470,8 @@ const historicalSites = [
     visitInfo: { price: '€20', duration: '45 min - 1 hour', closedDay: 'Friday', dressCode: true },
     fromGalata: { walking: '50 min', transit: '25 min (bus/taxi)', distance: '4.2 km' },
     coords: { lat: 41.0314, lng: 28.9394 },
-    wikipediaUrl: 'https://en.wikipedia.org/wiki/The_Chora',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Chora_Church',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Chora_Church_2024.jpg',
     quickFacts: [
       'Finest surviving Byzantine mosaics and frescoes',
       'Name means "in the countryside" (originally outside walls)',
@@ -490,6 +499,7 @@ const historicalSites = [
     fromGalata: { walking: '22 min', transit: '14 min (tram T1)', distance: '1.9 km' },
     coords: { lat: 41.0062, lng: 28.9754 },
     wikipediaUrl: 'https://en.wikipedia.org/wiki/Hippodrome_of_Constantinople',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Sultanahmet_Square%2C_Obelisk_of_Theodosius%2C_Istanbul_%2852121868925%29.jpg',
     quickFacts: [
       'Held 100,000 spectators for chariot races',
       '3,500-year-old Egyptian obelisk still stands',
@@ -641,35 +651,64 @@ function ExpandableCard({ title, children, defaultOpen = false, icon, badge }: {
 }
 
 function PlaceCard({ place }: { place: Place }) {
+  const [expanded, setExpanded] = useState(false)
   const mapsUrl = place.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' Istanbul')}`
 
   return (
-    <div className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
-      <div className="flex justify-between items-start gap-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-text-primary">{place.name}</h4>
-            {place.price && <span className="text-xs text-orange-400">{place.price}</span>}
+    <div className="bg-white/5 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full p-4 text-left hover:bg-white/5 transition-colors"
+      >
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-medium text-text-primary">{place.name}</h4>
+              {place.price && <span className="text-xs text-orange-400">{place.price}</span>}
+            </div>
+            <p className="text-sm text-text-secondary mb-2">{place.description}</p>
+            {place.mustTry && (
+              <p className="text-sm text-green-400 flex items-center gap-1">
+                <Star className="w-3 h-3" /> Must try: {place.mustTry}
+              </p>
+            )}
+            {place.tip && (
+              <p className="text-xs text-text-muted mt-1 italic">💡 {place.tip}</p>
+            )}
           </div>
-          <p className="text-sm text-text-secondary mb-2">{place.description}</p>
-          {place.mustTry && (
-            <p className="text-sm text-green-400 flex items-center gap-1">
-              <Star className="w-3 h-3" /> Must try: {place.mustTry}
-            </p>
-          )}
-          {place.tip && (
-            <p className="text-xs text-text-muted mt-1 italic">💡 {place.tip}</p>
-          )}
+          <div className="flex-shrink-0 p-2 rounded-lg bg-orange-500/20 text-orange-400">
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+          </div>
         </div>
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-shrink-0 p-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors"
-        >
-          <MapPin className="w-4 h-4" />
-        </a>
-      </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3">
+          {/* Embedded Map */}
+          <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+            <iframe
+              src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(place.name + ' Istanbul')}&zoom=17`}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+
+          {/* Open in Maps Button */}
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors text-sm"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open in Google Maps
+          </a>
+        </div>
+      )}
     </div>
   )
 }
@@ -963,6 +1002,8 @@ function FoodSection() {
 }
 
 function NeighborhoodsSection() {
+  const [expandedHood, setExpandedHood] = useState<string | null>(null)
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -977,15 +1018,25 @@ function NeighborhoodsSection() {
             className="bg-bg-card rounded-xl border border-white/10 overflow-hidden"
           >
             <div className={cn('h-2 bg-gradient-to-r', hood.gradient)} />
-            <div className="p-4">
+            <button
+              onClick={() => setExpandedHood(expandedHood === hood.id ? null : hood.id)}
+              className="w-full p-4 text-left hover:bg-white/5 transition-colors"
+            >
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-bold text-text-primary text-lg">{hood.name}</h3>
                   <p className="text-sm text-orange-400">{hood.tagline}</p>
                 </div>
-                <span className="text-xs text-text-muted bg-white/5 px-2 py-1 rounded">
-                  {hood.walkingTime}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-text-muted bg-white/5 px-2 py-1 rounded">
+                    {hood.walkingTime}
+                  </span>
+                  {expandedHood === hood.id ? (
+                    <ChevronUp className="w-4 h-4 text-text-muted" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-text-muted" />
+                  )}
+                </div>
               </div>
               <p className="text-sm text-text-secondary mb-3">{hood.description}</p>
               <div className="flex flex-wrap gap-2">
@@ -995,7 +1046,35 @@ function NeighborhoodsSection() {
                   </span>
                 ))}
               </div>
-            </div>
+            </button>
+
+            {expandedHood === hood.id && (
+              <div className="px-4 pb-4 space-y-3">
+                {/* Embedded Map */}
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(hood.name + ' Istanbul')}&zoom=15`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+
+                {/* Open in Maps Button */}
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hood.name + ' Istanbul')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors text-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Explore in Google Maps
+                </a>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -1169,25 +1248,34 @@ function PracticalSection() {
       <div className="bg-red-500/10 rounded-xl p-4 border border-red-500/20">
         <h3 className="font-bold text-text-primary mb-3 flex items-center gap-2">
           <Phone className="w-5 h-5 text-red-400" />
-          Emergency Info
+          Emergency Numbers
         </h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Emergency (all)</span>
-            <span className="text-text-primary font-medium">112</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Police</span>
+        <p className="text-xs text-text-muted mb-3">Tap to call</p>
+        <div className="space-y-2">
+          <a href="tel:112" className="flex justify-between items-center p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors">
+            <span className="text-text-secondary text-sm">Emergency (all)</span>
+            <span className="text-red-400 font-bold">112</span>
+          </a>
+          <a href="tel:155" className="flex justify-between items-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <span className="text-text-secondary text-sm">Police</span>
             <span className="text-text-primary font-medium">155</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Tourist Police</span>
+          </a>
+          <a href="tel:+902125274503" className="flex justify-between items-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <span className="text-text-secondary text-sm">Tourist Police</span>
             <span className="text-text-primary font-medium">+90 212 527 4503</span>
-          </div>
-          <p className="text-xs text-text-muted mt-2">
-            Pharmacies (Eczane) are everywhere and many speak English. Look for the green cross sign.
-          </p>
+          </a>
+          <a href="tel:110" className="flex justify-between items-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <span className="text-text-secondary text-sm">Fire</span>
+            <span className="text-text-primary font-medium">110</span>
+          </a>
+          <a href="tel:+902124573500" className="flex justify-between items-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <span className="text-text-secondary text-sm">US Consulate</span>
+            <span className="text-text-primary font-medium text-xs">+90 212 457 3500</span>
+          </a>
         </div>
+        <p className="text-xs text-text-muted mt-3">
+          Pharmacies (Eczane) have green cross signs. Many speak English.
+        </p>
       </div>
     </div>
   )
@@ -1290,6 +1378,32 @@ function HistoricalSection() {
             {/* Expanded Content */}
             {expandedSite === site.id && (
               <div className="px-4 pb-4 space-y-4">
+                {/* Hero Image */}
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-white/5">
+                  <img
+                    src={site.imageUrl}
+                    alt={site.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                    <p className="text-xs text-white/70">Photo: Wikimedia Commons</p>
+                  </div>
+                </div>
+
+                {/* Embedded Map */}
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(site.name + ' Istanbul')}&zoom=16`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+
                 {/* Distance from Galata */}
                 <div className="bg-white/5 rounded-lg p-3">
                   <h4 className="text-sm font-medium text-text-primary mb-2 flex items-center gap-2">
