@@ -127,11 +127,6 @@ export default function Home() {
             <AppCard key={app.id} app={app} index={index} />
           ))}
         </div>
-
-        {/* Footer */}
-        <footer className="text-center mt-12 text-text-muted text-sm" style={{ animation: 'fadeInUp 0.6s ease-out 0.8s both' }}>
-          <p className="font-mono">Built with React + Vite + Tailwind</p>
-        </footer>
       </div>
     </div>
   )
