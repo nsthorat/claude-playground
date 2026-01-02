@@ -5,7 +5,7 @@ import {
   Coffee, Wine, Camera, Waves, Building2, Train,
   Sun, Sunset, ChevronDown, ChevronUp, Check,
   Smartphone, CreditCard, Phone, Heart, Sparkles,
-  Landmark, BookOpen
+  Landmark, BookOpen, Snowflake, Download, ShoppingBag, Gift
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -204,6 +204,145 @@ const photoSpots = [
   { name: 'Rainbow Stairs (Balat)', description: 'Painted staircases in the heart of Balat', coords: { lat: 41.0290, lng: 28.9485 }, bestTime: 'Midday for even lighting' },
   { name: 'Galata Bridge Sunset', description: 'Watch fishermen against the Old City skyline', coords: { lat: 41.0200, lng: 28.9730 }, bestTime: 'Golden hour', tip: 'Lower deck for fish sandwich, upper deck for views' },
   { name: 'Süleymaniye Mosque Terrace', description: 'Best panorama of Golden Horn and Old City', coords: { lat: 41.0162, lng: 28.9640 }, bestTime: 'Sunset', tip: 'Less touristy than Blue Mosque area' },
+]
+
+// Shopping - Near Galata & Classic Bazaars
+const shoppingAreas = [
+  {
+    id: 'serdar-ekrem',
+    name: 'Serdar-ı Ekrem Street',
+    area: 'Galata',
+    description: 'The bohemian heart of Galata - local designer boutiques, handmade jewelry, and concept stores. No big brand labels here.',
+    walkTime: '5 min from hotel',
+    coords: { lat: 41.0262, lng: 28.9738 },
+    shops: [
+      { name: 'Atelier 55', type: 'Multi-brand concept store', what: 'Local fashion, homewares, art pieces' },
+      { name: 'Der Liebling', type: 'Jewelry atelier', what: 'Handmade gold jewelry with baroque pearls' },
+      { name: 'Lunapark', type: 'Gift shop', what: 'Quirky souvenirs and Turkish pop culture items' },
+    ],
+    tip: 'Best street in Istanbul for unique, non-touristy gifts'
+  },
+  {
+    id: 'karakoy-galata',
+    name: 'Karaköy & Galata Shops',
+    area: 'Galata',
+    description: 'Our neighborhood! Leather goods, textiles, baklava, and specialty food shops.',
+    walkTime: '0-10 min from hotel',
+    coords: { lat: 41.0222, lng: 28.9770 },
+    shops: [
+      { name: 'Karaköy Güllüoğlu', type: 'Baklava', what: 'The best baklava in Istanbul - perfect gift boxes' },
+      { name: 'Galata Leather', type: 'Leather goods', what: 'Quality bags, wallets at fair prices' },
+      { name: 'Namli Gurme', type: 'Gourmet deli', what: 'Cured meats, cheeses, honey, olive oil' },
+    ],
+    tip: 'Güllüoğlu gift boxes travel well and everyone loves them'
+  },
+  {
+    id: 'grand-bazaar',
+    name: 'Grand Bazaar',
+    area: 'Sultanahmet',
+    description: 'The world\'s oldest shopping mall (since 1461). 4,000+ shops for carpets, jewelry, ceramics, lamps, and textiles.',
+    walkTime: '20 min tram (T1)',
+    coords: { lat: 41.0108, lng: 28.9680 },
+    shops: [
+      { name: 'Iznik Ceramics', type: 'Ceramics', what: 'Hand-painted tiles, bowls, plates' },
+      { name: 'Various carpet shops', type: 'Carpets', what: 'Turkish and Persian rugs (bargain hard!)' },
+      { name: 'Jewelry alley', type: 'Gold & silver', what: 'Traditional Ottoman-style jewelry' },
+    ],
+    tip: 'Closed Sundays. Start at 50% of asking price and negotiate up'
+  },
+  {
+    id: 'spice-bazaar',
+    name: 'Spice Bazaar',
+    area: 'Eminönü',
+    description: 'Also called Egyptian Bazaar. Smaller and more manageable than Grand Bazaar. Spices, teas, Turkish delight, dried fruits.',
+    walkTime: '15 min walk or tram',
+    coords: { lat: 41.0165, lng: 28.9705 },
+    shops: [
+      { name: 'Hafız Mustafa 1864', type: 'Sweets', what: 'Best Turkish delight (lokum) - iconic since 1864' },
+      { name: 'Spice vendors', type: 'Spices', what: 'Sumac, za\'atar, Turkish red pepper, saffron' },
+      { name: 'Tea shops', type: 'Tea', what: 'Apple tea, pomegranate tea, sage, chamomile' },
+    ],
+    tip: 'Free samples everywhere! Hafız Mustafa right outside is worth the premium'
+  },
+]
+
+const giftIdeas = [
+  { item: 'Turkish Delight (Lokum)', where: 'Hafız Mustafa or Spice Bazaar', price: '€5-15', tip: 'Pistachio or rose are classics' },
+  { item: 'Baklava', where: 'Karaköy Güllüoğlu', price: '€10-25', tip: 'Get a gift box - travels well' },
+  { item: 'Spices & Teas', where: 'Spice Bazaar', price: '€3-10', tip: 'Sumac, za\'atar, apple tea' },
+  { item: 'Ceramics', where: 'Grand Bazaar or Arasta', price: '€10-50', tip: 'Small bowls are easy to pack' },
+  { item: 'Turkish Coffee Set', where: 'Grand Bazaar', price: '€15-40', tip: 'Includes cezve pot and cups' },
+  { item: 'Peshtemal Towels', where: 'Galata shops', price: '€15-30', tip: 'Lightweight, stylish bath towels' },
+  { item: 'Leather Goods', where: 'Galata Leather', price: '€30-100', tip: 'Bags, wallets, belts' },
+  { item: 'Olive Oil Soap', where: 'Spice Bazaar', price: '€2-5', tip: 'Great small gift' },
+]
+
+// Winter seasonal treats - perfect for January!
+const winterTreats = [
+  {
+    name: 'Salep',
+    turkish: 'Sahlep',
+    description: 'Hot orchid milk drink topped with cinnamon. The quintessential Istanbul winter warmer.',
+    where: 'Any street vendor or cafe',
+    price: '~30-50 TL',
+    tip: 'Best enjoyed with a Bosphorus view'
+  },
+  {
+    name: 'Boza',
+    turkish: 'Boza',
+    description: 'Thick, tangy fermented millet drink. Ottoman tradition since the 10th century.',
+    where: 'Vefa Bozacısı (since 1876) - a must visit!',
+    price: '~40 TL',
+    tip: 'Topped with roasted chickpeas (leblebi) and cinnamon'
+  },
+  {
+    name: 'Roasted Chestnuts',
+    turkish: 'Kestane',
+    description: 'Smoky, sweet chestnuts in paper bags. The smell of Istanbul winter.',
+    where: 'Street vendors on every corner',
+    price: '~20-30 TL',
+    tip: 'Perfect for snacking while exploring'
+  },
+  {
+    name: 'Kumpir',
+    turkish: 'Kumpir',
+    description: 'Massive baked potato loaded with cheese, butter, and endless toppings.',
+    where: 'Ortaköy waterfront - the kumpir capital',
+    price: '~80-120 TL',
+    tip: 'Evening tradition: eat by the Bosphorus watching the bridge lights'
+  },
+]
+
+// Essential apps for Istanbul
+const essentialApps = [
+  {
+    name: 'BiTaksi',
+    icon: '🚕',
+    description: 'Taxi app that shows fare estimates and tracks your ride. Avoids scams.',
+    tip: 'Much safer than street hails - see driver rating and car details',
+    store: 'App Store & Google Play'
+  },
+  {
+    name: 'Istanbulkart',
+    icon: '🚇',
+    description: 'Official app to top up your transit card via NFC on your phone.',
+    tip: 'No more hunting for kiosks to reload',
+    store: 'App Store & Google Play'
+  },
+  {
+    name: 'Google Maps',
+    icon: '🗺️',
+    description: 'Download Istanbul area for offline use before your trip.',
+    tip: 'Works without data - essential for navigating side streets',
+    store: 'Download offline maps in app settings'
+  },
+  {
+    name: 'Google Translate',
+    icon: '📷',
+    description: 'Camera mode instantly translates menus, signs, and text.',
+    tip: 'Download Turkish for offline use',
+    store: 'App Store & Google Play'
+  },
 ]
 
 const practicalInfo = {
@@ -1204,6 +1343,147 @@ function ExperiencesSection() {
   )
 }
 
+function ShoppingSection() {
+  const [expandedArea, setExpandedArea] = useState<string | null>('serdar-ekrem')
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-text-primary mb-2">Shopping & Gifts</h2>
+        <p className="text-text-secondary">From local boutiques to historic bazaars</p>
+      </div>
+
+      {/* Gift Ideas Quick Reference */}
+      <ExpandableCard title="Gift Ideas" icon={<Gift className="w-4 h-4" />} defaultOpen>
+        <div className="space-y-2">
+          <p className="text-sm text-text-secondary mb-3">Best souvenirs to bring home:</p>
+          {giftIdeas.map((gift, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-3 flex justify-between items-start">
+              <div>
+                <h4 className="font-medium text-text-primary text-sm">{gift.item}</h4>
+                <p className="text-xs text-text-muted">{gift.where}</p>
+                <p className="text-xs text-orange-400 mt-1">💡 {gift.tip}</p>
+              </div>
+              <span className="text-xs text-green-400 whitespace-nowrap">{gift.price}</span>
+            </div>
+          ))}
+        </div>
+      </ExpandableCard>
+
+      {/* Shopping Areas */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-orange-400" />
+          Where to Shop
+        </h3>
+
+        {shoppingAreas.map(area => (
+          <div
+            key={area.id}
+            className={cn(
+              'bg-bg-card rounded-xl border overflow-hidden transition-all',
+              expandedArea === area.id ? 'border-orange-500/50' : 'border-white/10'
+            )}
+          >
+            <button
+              onClick={() => setExpandedArea(expandedArea === area.id ? null : area.id)}
+              className="w-full p-4 flex items-start justify-between hover:bg-white/5 transition-colors text-left"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-bold text-text-primary">{area.name}</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400">
+                    {area.area}
+                  </span>
+                </div>
+                <p className="text-sm text-text-secondary">{area.description}</p>
+                <p className="text-xs text-text-muted mt-1">🚶 {area.walkTime}</p>
+              </div>
+              {expandedArea === area.id ? (
+                <ChevronUp className="w-5 h-5 text-text-muted flex-shrink-0" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-text-muted flex-shrink-0" />
+              )}
+            </button>
+
+            {expandedArea === area.id && (
+              <div className="px-4 pb-4 space-y-3">
+                {/* Embedded Map */}
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[4/3]">
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(area.name + ' Istanbul')}&zoom=15`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+
+                {/* Shops */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium text-text-primary">Notable Shops:</h5>
+                  {area.shops.map((shop, i) => (
+                    <div key={i} className="bg-white/5 rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h6 className="font-medium text-text-primary text-sm">{shop.name}</h6>
+                          <p className="text-xs text-orange-400">{shop.type}</p>
+                          <p className="text-xs text-text-secondary mt-1">{shop.what}</p>
+                        </div>
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + ' Istanbul')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
+                        >
+                          <MapPin className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Tip */}
+                <div className="bg-orange-500/10 rounded-lg p-3">
+                  <p className="text-sm text-orange-400">💡 {area.tip}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Bargaining Tips */}
+      <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl p-4 border border-orange-500/20">
+        <h3 className="font-bold text-text-primary mb-3 flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-orange-400" />
+          Bargaining Tips
+        </h3>
+        <ul className="space-y-2">
+          <li className="text-sm text-text-secondary flex items-start gap-2">
+            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            Start at 50% of asking price for carpets, jewelry, leather
+          </li>
+          <li className="text-sm text-text-secondary flex items-start gap-2">
+            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            Pay in Turkish Lira for better prices (not euros)
+          </li>
+          <li className="text-sm text-text-secondary flex items-start gap-2">
+            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            Walk away if price seems too high - they'll often call you back
+          </li>
+          <li className="text-sm text-text-secondary flex items-start gap-2">
+            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            Fixed prices at Hafız Mustafa, Güllüoğlu, modern shops
+          </li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function PracticalSection() {
   return (
     <div className="space-y-6">
@@ -1212,8 +1492,49 @@ function PracticalSection() {
         <p className="text-text-secondary">Everything you need to know</p>
       </div>
 
+      {/* Winter Treats - January Special */}
+      <ExpandableCard title="Winter Treats ❄️" icon={<Snowflake className="w-4 h-4" />} defaultOpen>
+        <div className="space-y-3">
+          <p className="text-sm text-text-secondary mb-3">
+            January is perfect for Istanbul's cozy winter specialties!
+          </p>
+          {winterTreats.map((treat, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-3">
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="font-medium text-text-primary">{treat.name}</h4>
+                <span className="text-xs text-green-400">{treat.price}</span>
+              </div>
+              <p className="text-xs text-orange-400 italic mb-1">{treat.turkish}</p>
+              <p className="text-sm text-text-secondary">{treat.description}</p>
+              <p className="text-xs text-text-muted mt-2">📍 {treat.where}</p>
+              <p className="text-xs text-orange-400 mt-1">💡 {treat.tip}</p>
+            </div>
+          ))}
+        </div>
+      </ExpandableCard>
+
+      {/* Essential Apps */}
+      <ExpandableCard title="Essential Apps" icon={<Download className="w-4 h-4" />} defaultOpen>
+        <div className="space-y-3">
+          <p className="text-sm text-text-secondary mb-3">
+            Download these before you leave home!
+          </p>
+          {essentialApps.map((app, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{app.icon}</span>
+                <h4 className="font-medium text-text-primary">{app.name}</h4>
+              </div>
+              <p className="text-sm text-text-secondary">{app.description}</p>
+              <p className="text-xs text-orange-400 mt-1">💡 {app.tip}</p>
+              <p className="text-xs text-text-muted mt-1">{app.store}</p>
+            </div>
+          ))}
+        </div>
+      </ExpandableCard>
+
       {/* Transport */}
-      <ExpandableCard title="Getting Around" icon={<Train className="w-4 h-4" />} defaultOpen>
+      <ExpandableCard title="Getting Around" icon={<Train className="w-4 h-4" />}>
         <div className="space-y-3">
           {practicalInfo.transport.map((item, i) => (
             <div key={i} className="bg-white/5 rounded-lg p-3">
@@ -1264,6 +1585,15 @@ function PracticalSection() {
               <span className="text-xs text-orange-400 italic">{phrase.pronunciation}</span>
             </div>
           ))}
+          <a
+            href="https://translate.google.com/?sl=en&tl=tr&op=translate"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 mt-3 p-3 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open Google Translate (English → Turkish)
+          </a>
         </div>
       </ExpandableCard>
 
@@ -1300,6 +1630,73 @@ function PracticalSection() {
           Pharmacies (Eczane) have green cross signs. Many speak English.
         </p>
       </div>
+
+      {/* External Resources */}
+      <ExpandableCard title="Learn More" icon={<BookOpen className="w-4 h-4" />}>
+        <div className="space-y-2">
+          <p className="text-sm text-text-secondary mb-3">Helpful resources for trip planning:</p>
+          <a
+            href="https://istanbul-tourist-information.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">Istanbul Tourist Information</h4>
+              <p className="text-xs text-text-muted">Official tourism guide</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://istanbeautiful.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">IstanBeautiful</h4>
+              <p className="text-xs text-text-muted">Local tips & hidden gems</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://www.tripadvisor.com/Tourism-g293974-Istanbul-Vacations.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">TripAdvisor Istanbul</h4>
+              <p className="text-xs text-text-muted">Reviews & recommendations</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://www.lonelyplanet.com/turkey/istanbul"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">Lonely Planet Istanbul</h4>
+              <p className="text-xs text-text-muted">In-depth travel guide</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://www.timeout.com/istanbul"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">Time Out Istanbul</h4>
+              <p className="text-xs text-text-muted">Events, restaurants, nightlife</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+        </div>
+      </ExpandableCard>
     </div>
   )
 }
@@ -1567,8 +1964,8 @@ export default function Istanbul() {
   const tabs = [
     { id: 'itinerary', label: 'Itinerary', icon: <Calendar className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <Landmark className="w-4 h-4" /> },
-    { id: 'map', label: 'Map', icon: <MapPin className="w-4 h-4" /> },
     { id: 'food', label: 'Eat & Drink', icon: <Utensils className="w-4 h-4" /> },
+    { id: 'shopping', label: 'Shop', icon: <ShoppingBag className="w-4 h-4" /> },
     { id: 'neighborhoods', label: 'Areas', icon: <Compass className="w-4 h-4" /> },
     { id: 'experiences', label: 'Do', icon: <Camera className="w-4 h-4" /> },
     { id: 'practical', label: 'Info', icon: <Info className="w-4 h-4" /> },
@@ -1614,8 +2011,8 @@ export default function Istanbul() {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {activeTab === 'itinerary' && <ItinerarySection />}
         {activeTab === 'history' && <HistoricalSection />}
-        {activeTab === 'map' && <MapSection />}
         {activeTab === 'food' && <FoodSection />}
+        {activeTab === 'shopping' && <ShoppingSection />}
         {activeTab === 'neighborhoods' && <NeighborhoodsSection />}
         {activeTab === 'experiences' && <ExperiencesSection />}
         {activeTab === 'practical' && <PracticalSection />}
