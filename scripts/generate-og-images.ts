@@ -83,7 +83,14 @@ async function generateImages() {
 
   console.log('Server ready! Launching browser...\n')
 
-  const browser = await chromium.launch({ headless: true })
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--allow-running-insecure-content',
+    ]
+  })
 
   // Network errors to ignore (expected in headless/sandboxed environments)
   const ignoredErrors = [
@@ -112,7 +119,11 @@ async function generateImages() {
         }
       })
 
-      const url = `${BASE_URL}${app.path}`
+      // For Istanbul, use the history tab to avoid showing empty map iframes
+      let url = `${BASE_URL}${app.path}`
+      if (app.path.includes('istanbul')) {
+        url = `${BASE_URL}${app.path}#history`
+      }
       console.log(`Capturing ${url}...`)
 
       await page.goto(url, { waitUntil: 'networkidle' })
