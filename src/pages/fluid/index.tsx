@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowLeft, Smartphone, Hand, Trash2, RotateCcw } from 'lucide-react'
+
+const BASE_PATH = '/claude-playground'
 import { FluidSimulation } from './simulation'
 import { cn } from '@/lib/utils'
 
@@ -278,12 +279,12 @@ export default function FluidSim() {
 
       {/* Header overlay */}
       <header className="relative z-10 p-4 flex items-center justify-between">
-        <Link
-          to="/"
+        <a
+          href={`${BASE_PATH}/`}
           className="flex items-center justify-center w-10 h-10 rounded-full bg-bg-card/80 backdrop-blur-sm text-text-secondary hover:text-accent-cyan transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </a>
 
         <h1 className="text-lg font-bold bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent">
           Fluid Sim

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+
+const BASE_PATH = '/claude-playground'
 
 type SensorStatus = 'unknown' | 'checking' | 'available' | 'unavailable' | 'granted' | 'denied' | 'prompt'
 
@@ -395,10 +396,10 @@ export default function SensorDiagnostics() {
 
   return (
     <div style={styles.container}>
-      <Link to="/" style={styles.backLink} className="hover:text-accent-cyan">
+      <a href={`${BASE_PATH}/`} style={styles.backLink} className="hover:text-accent-cyan">
         <ArrowLeft className="w-4 h-4" />
         Back to Home
-      </Link>
+      </a>
 
       <header style={styles.header}>
         <h1 style={styles.title}>Sensor Diagnostics</h1>
