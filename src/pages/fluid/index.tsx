@@ -8,25 +8,29 @@ import { cn } from '@/lib/utils'
 type ColorPalette = 'rainbow' | 'fire' | 'ocean' | 'neon'
 type ControlMode = 'tilt' | 'touch'
 
+// Color intensity multiplier - lower values prevent white-washing when colors overlap
+const COLOR_INTENSITY = 0.4
+
 const palettes: Record<ColorPalette, () => [number, number, number]> = {
   rainbow: () => {
     const hue = Math.random()
-    return hslToRgb(hue, 1, 0.5)
+    const [r, g, b] = hslToRgb(hue, 1, 0.5)
+    return [r * COLOR_INTENSITY, g * COLOR_INTENSITY, b * COLOR_INTENSITY]
   },
   fire: () => {
     const t = Math.random()
-    return [1, 0.2 + t * 0.5, t * 0.2]
+    return [1 * COLOR_INTENSITY, (0.2 + t * 0.5) * COLOR_INTENSITY, t * 0.2 * COLOR_INTENSITY]
   },
   ocean: () => {
     const t = Math.random()
-    return [t * 0.3, 0.5 + t * 0.3, 0.8 + t * 0.2]
+    return [t * 0.3 * COLOR_INTENSITY, (0.5 + t * 0.3) * COLOR_INTENSITY, (0.8 + t * 0.2) * COLOR_INTENSITY]
   },
   neon: () => {
     const colors: [number, number, number][] = [
-      [0, 0.82, 1],    // cyan
-      [0.67, 0.4, 1],  // purple
-      [1, 0.4, 0.67],  // pink
-      [0, 1, 0.53],    // green
+      [0, 0.82 * COLOR_INTENSITY, 1 * COLOR_INTENSITY],    // cyan
+      [0.67 * COLOR_INTENSITY, 0.4 * COLOR_INTENSITY, 1 * COLOR_INTENSITY],  // purple
+      [1 * COLOR_INTENSITY, 0.4 * COLOR_INTENSITY, 0.67 * COLOR_INTENSITY],  // pink
+      [0, 1 * COLOR_INTENSITY, 0.53 * COLOR_INTENSITY],    // green
     ]
     return colors[Math.floor(Math.random() * colors.length)]
   },
@@ -163,14 +167,25 @@ export default function FluidSim() {
   useEffect(() => {
     if (controlMode !== 'tilt' || orientationStatus !== 'granted') return
 
-    // Map gamma (-90 to 90) to x gravity (-1 to 1)
-    // Map beta (-180 to 180, but useful range is -90 to 90) to y gravity
-    const targetX = Math.max(-1, Math.min(1, tilt.gamma / 45))
-    const targetY = Math.max(-1, Math.min(1, (tilt.beta - 45) / 45)) // Offset by 45 so flat = no gravity
+    // Convert degrees to radians
+    const betaRad = (tilt.beta * Math.PI) / 180
+    const gammaRad = (tilt.gamma * Math.PI) / 180
 
-    // Smooth the gravity (lerp)
-    gravityRef.current.x += (targetX - gravityRef.current.x) * 0.1
-    gravityRef.current.y += (targetY - gravityRef.current.y) * 0.1
+    // Use sine for smooth gravity mapping:
+    // - Phone flat (beta=0): sin(0) = 0, no vertical gravity
+    // - Phone tilted forward (beta=90): sin(90°) = 1, gravity pulls down (negative Y in WebGL)
+    // - Phone tilted right (gamma>0): sin(gamma) > 0, gravity pulls right (positive X)
+    const targetX = Math.sin(gammaRad)
+    // Negative because positive beta (tilted toward user) should pull fluid DOWN (negative Y)
+    const targetY = -Math.sin(betaRad)
+
+    // Clamp to [-1, 1] range
+    const clampedX = Math.max(-1, Math.min(1, targetX))
+    const clampedY = Math.max(-1, Math.min(1, targetY))
+
+    // Smooth the gravity (lerp) for fluid feel
+    gravityRef.current.x += (clampedX - gravityRef.current.x) * 0.15
+    gravityRef.current.y += (clampedY - gravityRef.current.y) * 0.15
   }, [tilt, controlMode, orientationStatus])
 
   // Animation loop
