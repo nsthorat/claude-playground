@@ -62,11 +62,12 @@ export class FluidSimulation {
   private simHeight = 128
   private dyeWidth = 1024
   private dyeHeight = 1024
-  private density = 0.98
-  private velocityDissipation = 0.99
+  private density = 0.97          // Lower = colors fade faster, prevents white buildup
+  private velocityDissipation = 0.98
   private pressureIterations = 20
   private curlStrength = 30
   private splatRadius = 0.25
+  private gravityStrength = 100   // Multiplier for gravity effect from device tilt
 
   // Gravity from device orientation
   private gravityX = 0
@@ -348,12 +349,12 @@ export class FluidSimulation {
     const gl = this.gl
     gl.disable(gl.BLEND)
 
-    // Apply gravity/external forces
+    // Apply gravity/external forces from device tilt
     if (Math.abs(this.gravityX) > 0.01 || Math.abs(this.gravityY) > 0.01) {
       this.programs.externalForce.bind()
       gl.uniform2f(this.programs.externalForce.uniforms.texelSize, this.velocity.texelSizeX, this.velocity.texelSizeY)
       gl.uniform1i(this.programs.externalForce.uniforms.uVelocity, this.velocity.read.attach(0))
-      gl.uniform2f(this.programs.externalForce.uniforms.gravity, this.gravityX * 50, this.gravityY * 50)
+      gl.uniform2f(this.programs.externalForce.uniforms.gravity, this.gravityX * this.gravityStrength, this.gravityY * this.gravityStrength)
       gl.uniform1f(this.programs.externalForce.uniforms.dt, dt)
       this.blit(this.velocity.write)
       this.velocity.swap()
