@@ -806,6 +806,16 @@ function MapSection() {
 function ItinerarySection() {
   const [expandedDay, setExpandedDay] = useState<number>(1)
 
+  // Map queries for each day's main area
+  const dayMapQueries: Record<number, string> = {
+    1: 'Galata Tower Istanbul',
+    2: 'Istiklal Street Istanbul',
+    3: 'Hagia Sophia Istanbul',
+    4: 'Galata Istanbul hammam',
+    5: 'Kadıköy Istanbul',
+    6: 'Balat Istanbul',
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -869,6 +879,19 @@ function ItinerarySection() {
 
             {expandedDay === day.day && (
               <div className="px-4 pb-4 space-y-3">
+                {/* Embedded Map for the day's area */}
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[4/3]">
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(dayMapQueries[day.day] || 'Istanbul')}&zoom=14`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+
                 {day.activities.map((activity, i) => (
                   <div key={i} className="flex gap-3 p-3 bg-white/5 rounded-lg">
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400">
