@@ -651,35 +651,64 @@ function ExpandableCard({ title, children, defaultOpen = false, icon, badge }: {
 }
 
 function PlaceCard({ place }: { place: Place }) {
+  const [expanded, setExpanded] = useState(false)
   const mapsUrl = place.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' Istanbul')}`
 
   return (
-    <div className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
-      <div className="flex justify-between items-start gap-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-text-primary">{place.name}</h4>
-            {place.price && <span className="text-xs text-orange-400">{place.price}</span>}
+    <div className="bg-white/5 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full p-4 text-left hover:bg-white/5 transition-colors"
+      >
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-medium text-text-primary">{place.name}</h4>
+              {place.price && <span className="text-xs text-orange-400">{place.price}</span>}
+            </div>
+            <p className="text-sm text-text-secondary mb-2">{place.description}</p>
+            {place.mustTry && (
+              <p className="text-sm text-green-400 flex items-center gap-1">
+                <Star className="w-3 h-3" /> Must try: {place.mustTry}
+              </p>
+            )}
+            {place.tip && (
+              <p className="text-xs text-text-muted mt-1 italic">💡 {place.tip}</p>
+            )}
           </div>
-          <p className="text-sm text-text-secondary mb-2">{place.description}</p>
-          {place.mustTry && (
-            <p className="text-sm text-green-400 flex items-center gap-1">
-              <Star className="w-3 h-3" /> Must try: {place.mustTry}
-            </p>
-          )}
-          {place.tip && (
-            <p className="text-xs text-text-muted mt-1 italic">💡 {place.tip}</p>
-          )}
+          <div className="flex-shrink-0 p-2 rounded-lg bg-orange-500/20 text-orange-400">
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+          </div>
         </div>
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-shrink-0 p-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors"
-        >
-          <MapPin className="w-4 h-4" />
-        </a>
-      </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3">
+          {/* Embedded Map */}
+          <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+            <iframe
+              src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(place.name + ' Istanbul')}&zoom=17`}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+
+          {/* Open in Maps Button */}
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors text-sm"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open in Google Maps
+          </a>
+        </div>
+      )}
     </div>
   )
 }
@@ -973,6 +1002,8 @@ function FoodSection() {
 }
 
 function NeighborhoodsSection() {
+  const [expandedHood, setExpandedHood] = useState<string | null>(null)
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -987,15 +1018,25 @@ function NeighborhoodsSection() {
             className="bg-bg-card rounded-xl border border-white/10 overflow-hidden"
           >
             <div className={cn('h-2 bg-gradient-to-r', hood.gradient)} />
-            <div className="p-4">
+            <button
+              onClick={() => setExpandedHood(expandedHood === hood.id ? null : hood.id)}
+              className="w-full p-4 text-left hover:bg-white/5 transition-colors"
+            >
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-bold text-text-primary text-lg">{hood.name}</h3>
                   <p className="text-sm text-orange-400">{hood.tagline}</p>
                 </div>
-                <span className="text-xs text-text-muted bg-white/5 px-2 py-1 rounded">
-                  {hood.walkingTime}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-text-muted bg-white/5 px-2 py-1 rounded">
+                    {hood.walkingTime}
+                  </span>
+                  {expandedHood === hood.id ? (
+                    <ChevronUp className="w-4 h-4 text-text-muted" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-text-muted" />
+                  )}
+                </div>
               </div>
               <p className="text-sm text-text-secondary mb-3">{hood.description}</p>
               <div className="flex flex-wrap gap-2">
@@ -1005,7 +1046,35 @@ function NeighborhoodsSection() {
                   </span>
                 ))}
               </div>
-            </div>
+            </button>
+
+            {expandedHood === hood.id && (
+              <div className="px-4 pb-4 space-y-3">
+                {/* Embedded Map */}
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(hood.name + ' Istanbul')}&zoom=15`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+
+                {/* Open in Maps Button */}
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hood.name + ' Istanbul')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors text-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Explore in Google Maps
+                </a>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -1320,6 +1389,19 @@ function HistoricalSection() {
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                     <p className="text-xs text-white/70">Photo: Wikimedia Commons</p>
                   </div>
+                </div>
+
+                {/* Embedded Map */}
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(site.name + ' Istanbul')}&zoom=16`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
                 </div>
 
                 {/* Distance from Galata */}
