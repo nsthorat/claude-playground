@@ -25,15 +25,18 @@ function discoverApps(): { path: string; output: string }[] {
   apps.push({ path: '/', output: 'public/og-home.png' })
 
   // Parse each entry (e.g., sensors: resolve(__dirname, 'sensors/index.html'))
-  const entryRegex = /(\w+):\s*resolve\(__dirname,\s*['"]([^'"]+)['"]\)/g
+  // Use the actual path from resolve() to support nested directories like recipes/ribeye
+  const entryRegex = /['"]?(\w[\w-]*)['"]?:\s*resolve\(__dirname,\s*['"]([^'"]+)['"]\)/g
   let match
 
   while ((match = entryRegex.exec(inputBlock)) !== null) {
-    const [, name] = match
+    const [, name, filePath] = match
     if (name !== 'main') {
+      // Extract directory path from file path (e.g., 'recipes/ribeye/index.html' -> 'recipes/ribeye')
+      const dirPath = filePath.replace(/\/index\.html$/, '')
       apps.push({
-        path: `/${name}/`,
-        output: `public/${name}/og-image.png`,
+        path: `/${dirPath}/`,
+        output: `public/${dirPath}/og-image.png`,
       })
     }
   }
