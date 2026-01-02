@@ -396,7 +396,7 @@ export default function SensorDiagnostics() {
 
   return (
     <div style={styles.container}>
-      <a href={`${BASE_PATH}/`} style={styles.backLink} className="hover:text-accent-cyan">
+      <a href={`${BASE_PATH}/`} style={styles.backLink} className="hover:text-accent-cyan" data-og-hide>
         <ArrowLeft className="w-4 h-4" />
         Back to Home
       </a>

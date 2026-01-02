@@ -837,7 +837,7 @@ export default function AudioVisualizer() {
   return (
     <div className="min-h-screen flex flex-col bg-black">
       {/* Minimal floating controls */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="absolute top-4 left-4 z-20" data-og-hide>
         <a
           href={`${BASE_PATH}/`}
           className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all"

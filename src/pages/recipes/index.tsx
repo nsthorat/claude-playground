@@ -105,6 +105,7 @@ export default function Recipes() {
           href={`${BASE_PATH}/`}
           className="inline-flex items-center gap-2 text-text-secondary hover:text-accent-cyan mb-6 transition-colors"
           style={{ animation: 'fadeInUp 0.4s ease-out' }}
+          data-og-hide
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Apps

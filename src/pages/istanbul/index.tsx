@@ -320,28 +320,32 @@ const essentialApps = [
     icon: '🚕',
     description: 'Taxi app that shows fare estimates and tracks your ride. Avoids scams.',
     tip: 'Much safer than street hails - see driver rating and car details',
-    store: 'App Store & Google Play'
+    appStore: 'https://apps.apple.com/app/bitaksi/id589500723',
+    playStore: 'https://play.google.com/store/apps/details?id=com.bitaksi.android'
   },
   {
     name: 'Istanbulkart',
     icon: '🚇',
     description: 'Official app to top up your transit card via NFC on your phone.',
     tip: 'No more hunting for kiosks to reload',
-    store: 'App Store & Google Play'
+    appStore: 'https://apps.apple.com/app/istanbulkart/id1437055386',
+    playStore: 'https://play.google.com/store/apps/details?id=com.bfreel.istanbulkart'
   },
   {
     name: 'Google Maps',
     icon: '🗺️',
     description: 'Download Istanbul area for offline use before your trip.',
     tip: 'Works without data - essential for navigating side streets',
-    store: 'Download offline maps in app settings'
+    appStore: 'https://apps.apple.com/app/google-maps/id585027354',
+    playStore: 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps'
   },
   {
     name: 'Google Translate',
     icon: '📷',
     description: 'Camera mode instantly translates menus, signs, and text.',
     tip: 'Download Turkish for offline use',
-    store: 'App Store & Google Play'
+    appStore: 'https://apps.apple.com/app/google-translate/id414706506',
+    playStore: 'https://play.google.com/store/apps/details?id=com.google.android.apps.translate'
   },
 ]
 
@@ -960,9 +964,6 @@ function ItinerarySection() {
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-text-primary mb-2">5-Day Itinerary</h2>
         <p className="text-text-secondary">January 3-8 | Galata-based adventure</p>
-        <p className="text-sm text-orange-400 mt-2 flex items-center justify-center gap-2">
-          <Heart className="w-4 h-4" /> Curated with love
-        </p>
       </div>
 
       {/* Quick Jump */}
@@ -1527,7 +1528,24 @@ function PracticalSection() {
               </div>
               <p className="text-sm text-text-secondary">{app.description}</p>
               <p className="text-xs text-orange-400 mt-1">💡 {app.tip}</p>
-              <p className="text-xs text-text-muted mt-1">{app.store}</p>
+              <div className="flex gap-2 mt-2">
+                <a
+                  href={app.appStore}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 text-text-primary hover:bg-white/20 transition-colors text-xs"
+                >
+                  <span>🍎</span> App Store
+                </a>
+                <a
+                  href={app.playStore}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 text-text-primary hover:bg-white/20 transition-colors text-xs"
+                >
+                  <span>▶️</span> Google Play
+                </a>
+              </div>
             </div>
           ))}
         </div>
@@ -1959,8 +1977,6 @@ function HistoricalSection() {
 // ============================================
 
 export default function Istanbul() {
-  const [activeTab, setActiveTab] = useState<string>('itinerary')
-
   const tabs = [
     { id: 'itinerary', label: 'Itinerary', icon: <Calendar className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <Landmark className="w-4 h-4" /> },
@@ -1971,6 +1987,36 @@ export default function Istanbul() {
     { id: 'practical', label: 'Info', icon: <Info className="w-4 h-4" /> },
   ]
 
+  // Get initial tab from URL hash
+  const getTabFromHash = () => {
+    const hash = window.location.hash.slice(1) // Remove the #
+    const validTab = tabs.find(t => t.id === hash)
+    return validTab ? hash : 'itinerary'
+  }
+
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      return getTabFromHash()
+    }
+    return 'itinerary'
+  })
+
+  // Update URL hash when tab changes
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    window.history.pushState(null, '', `#${tabId}`)
+  }
+
+  // Listen for browser back/forward navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveTab(getTabFromHash())
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
@@ -1980,6 +2026,7 @@ export default function Istanbul() {
             <a
               href={`${BASE_PATH}/`}
               className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              data-og-hide
             >
               <ArrowLeft className="w-5 h-5 text-text-secondary" />
             </a>
@@ -1997,7 +2044,7 @@ export default function Istanbul() {
               <TabButton
                 key={tab.id}
                 active={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 icon={tab.icon}
               >
                 {tab.label}

@@ -83,7 +83,14 @@ async function generateImages() {
 
   console.log('Server ready! Launching browser...\n')
 
-  const browser = await chromium.launch({ headless: true })
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--allow-running-insecure-content',
+    ]
+  })
 
   // Network errors to ignore (expected in headless/sandboxed environments)
   const ignoredErrors = [
@@ -95,7 +102,7 @@ async function generateImages() {
   try {
     for (const app of apps) {
       const page = await browser.newPage({
-        viewport: { width: 1200, height: 630 },
+        viewport: { width: 430, height: 932 }, // iPhone 16 Pro Max
       })
 
       // Capture console errors
@@ -112,13 +119,23 @@ async function generateImages() {
         }
       })
 
-      const url = `${BASE_URL}${app.path}`
+      // Build URL with ?og=1 param to hide back buttons
+      // For Istanbul, use the history tab to avoid showing empty map iframes
+      let url = `${BASE_URL}${app.path}?og=1`
+      if (app.path.includes('istanbul')) {
+        url = `${BASE_URL}${app.path}?og=1#history`
+      }
       console.log(`Capturing ${url}...`)
 
       await page.goto(url, { waitUntil: 'networkidle' })
 
-      // Wait a bit for any animations to settle
-      await page.waitForTimeout(1000)
+      // Hide elements marked with data-og-hide for cleaner OG images
+      await page.addStyleTag({
+        content: `[data-og-hide] { display: none !important; }`
+      })
+
+      // Wait for page to fully load and animations to settle
+      await page.waitForTimeout(2000)
 
       // Check for errors
       if (errors.length > 0) {
