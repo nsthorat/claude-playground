@@ -1959,8 +1959,6 @@ function HistoricalSection() {
 // ============================================
 
 export default function Istanbul() {
-  const [activeTab, setActiveTab] = useState<string>('itinerary')
-
   const tabs = [
     { id: 'itinerary', label: 'Itinerary', icon: <Calendar className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <Landmark className="w-4 h-4" /> },
@@ -1970,6 +1968,36 @@ export default function Istanbul() {
     { id: 'experiences', label: 'Do', icon: <Camera className="w-4 h-4" /> },
     { id: 'practical', label: 'Info', icon: <Info className="w-4 h-4" /> },
   ]
+
+  // Get initial tab from URL hash
+  const getTabFromHash = () => {
+    const hash = window.location.hash.slice(1) // Remove the #
+    const validTab = tabs.find(t => t.id === hash)
+    return validTab ? hash : 'itinerary'
+  }
+
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      return getTabFromHash()
+    }
+    return 'itinerary'
+  })
+
+  // Update URL hash when tab changes
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    window.history.pushState(null, '', `#${tabId}`)
+  }
+
+  // Listen for browser back/forward navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveTab(getTabFromHash())
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
 
   return (
     <div className="min-h-screen pb-24">
@@ -1997,7 +2025,7 @@ export default function Istanbul() {
               <TabButton
                 key={tab.id}
                 active={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 icon={tab.icon}
               >
                 {tab.label}
