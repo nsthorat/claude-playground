@@ -16,6 +16,7 @@ export default defineConfig({
         sensors: resolve(__dirname, 'sensors/index.html'),
         audio: resolve(__dirname, 'audio/index.html'),
         ribeye: resolve(__dirname, 'ribeye/index.html'),
+        fluid: resolve(__dirname, 'fluid/index.html'),
       },
     },
   },
