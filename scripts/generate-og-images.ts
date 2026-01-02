@@ -117,8 +117,8 @@ async function generateImages() {
 
       await page.goto(url, { waitUntil: 'networkidle' })
 
-      // Wait a bit for any animations to settle
-      await page.waitForTimeout(1000)
+      // Wait for page to fully load and animations to settle
+      await page.waitForTimeout(2000)
 
       // Check for errors
       if (errors.length > 0) {
