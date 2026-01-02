@@ -369,12 +369,12 @@ export default function RibeyeRecipe() {
       >
         <div className="max-w-2xl mx-auto px-4 py-4">
           <a
-            href={`${BASE_PATH}/`}
+            href={`${BASE_PATH}/recipes/`}
             className="inline-flex items-center gap-2 mb-3 text-sm font-medium transition-colors"
             style={{ color: colors.brown }}
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Apps
+            Back to Recipes
           </a>
 
           {/* Title */}
