@@ -63,7 +63,8 @@ Create a new folder at the root with an `index.html`:
     <meta property="og:title" content="My App" />
     <meta property="og:description" content="Description of my app." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://nsthorat.github.io/claude-playground/my-app/" />
+    <meta property="og:url" content="https://nikubaba.com/claude-playground/my-app/" />
+    <meta property="og:image" content="https://nikubaba.com/claude-playground/my-app/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <!-- Fonts -->
@@ -224,7 +225,64 @@ GitHub Pages serves from the `docs/` folder on the `main` branch.
 2. Commit the updated `docs/` folder
 3. Push to main branch
 
-URL: https://nsthorat.github.io/claude-playground/
+URL: https://nikubaba.com/claude-playground/
+
+## Testing Requirements (MANDATORY)
+
+**NEVER skip manual testing with Playwright.** When building or modifying apps, you MUST:
+
+1. **Create a one-off Playwright test script** to verify your work
+2. **Check for console errors** - the app must load without errors
+3. **Take screenshots** to visually verify the UI renders correctly
+
+Example test script (`scripts/test-my-app.ts`):
+
+```ts
+import { chromium } from 'playwright'
+
+async function test() {
+  const browser = await chromium.launch({ headless: true })
+  const page = await browser.newPage({ viewport: { width: 1200, height: 800 } })
+
+  // Capture console errors
+  const errors: string[] = []
+  page.on('console', msg => {
+    if (msg.type() === 'error') errors.push(msg.text())
+  })
+  page.on('pageerror', err => errors.push(err.message))
+
+  // Navigate and wait for load
+  await page.goto('http://localhost:5173/claude-playground/my-app/')
+  await page.waitForLoadState('networkidle')
+
+  // Check for errors
+  if (errors.length > 0) {
+    console.error('❌ Console errors found:')
+    errors.forEach(e => console.error('  ', e))
+    process.exit(1)
+  }
+
+  // Screenshot for visual verification
+  await page.screenshot({ path: '/tmp/my-app-test.png' })
+  console.log('✅ No errors, screenshot saved to /tmp/my-app-test.png')
+
+  await browser.close()
+}
+
+test()
+```
+
+Run with: `bun scripts/test-my-app.ts` (dev server must be running)
+
+## OG Image Generation
+
+Generate social preview images for all apps:
+
+```bash
+bun run generate-og
+```
+
+This uses Playwright to screenshot each app and saves images to `docs/*/og-image.png`.
 
 ## Architecture Notes
 
