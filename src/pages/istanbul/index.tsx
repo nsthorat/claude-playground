@@ -5,7 +5,7 @@ import {
   Coffee, Wine, Camera, Waves, Building2, Train,
   Sun, Sunset, ChevronDown, ChevronUp, Check,
   Smartphone, CreditCard, Phone, Heart, Sparkles,
-  Landmark, BookOpen
+  Landmark, BookOpen, Snowflake, Download
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -204,6 +204,74 @@ const photoSpots = [
   { name: 'Rainbow Stairs (Balat)', description: 'Painted staircases in the heart of Balat', coords: { lat: 41.0290, lng: 28.9485 }, bestTime: 'Midday for even lighting' },
   { name: 'Galata Bridge Sunset', description: 'Watch fishermen against the Old City skyline', coords: { lat: 41.0200, lng: 28.9730 }, bestTime: 'Golden hour', tip: 'Lower deck for fish sandwich, upper deck for views' },
   { name: 'Süleymaniye Mosque Terrace', description: 'Best panorama of Golden Horn and Old City', coords: { lat: 41.0162, lng: 28.9640 }, bestTime: 'Sunset', tip: 'Less touristy than Blue Mosque area' },
+]
+
+// Winter seasonal treats - perfect for January!
+const winterTreats = [
+  {
+    name: 'Salep',
+    turkish: 'Sahlep',
+    description: 'Hot orchid milk drink topped with cinnamon. The quintessential Istanbul winter warmer.',
+    where: 'Any street vendor or cafe',
+    price: '~30-50 TL',
+    tip: 'Best enjoyed with a Bosphorus view'
+  },
+  {
+    name: 'Boza',
+    turkish: 'Boza',
+    description: 'Thick, tangy fermented millet drink. Ottoman tradition since the 10th century.',
+    where: 'Vefa Bozacısı (since 1876) - a must visit!',
+    price: '~40 TL',
+    tip: 'Topped with roasted chickpeas (leblebi) and cinnamon'
+  },
+  {
+    name: 'Roasted Chestnuts',
+    turkish: 'Kestane',
+    description: 'Smoky, sweet chestnuts in paper bags. The smell of Istanbul winter.',
+    where: 'Street vendors on every corner',
+    price: '~20-30 TL',
+    tip: 'Perfect for snacking while exploring'
+  },
+  {
+    name: 'Kumpir',
+    turkish: 'Kumpir',
+    description: 'Massive baked potato loaded with cheese, butter, and endless toppings.',
+    where: 'Ortaköy waterfront - the kumpir capital',
+    price: '~80-120 TL',
+    tip: 'Evening tradition: eat by the Bosphorus watching the bridge lights'
+  },
+]
+
+// Essential apps for Istanbul
+const essentialApps = [
+  {
+    name: 'BiTaksi',
+    icon: '🚕',
+    description: 'Taxi app that shows fare estimates and tracks your ride. Avoids scams.',
+    tip: 'Much safer than street hails - see driver rating and car details',
+    store: 'App Store & Google Play'
+  },
+  {
+    name: 'Istanbulkart',
+    icon: '🚇',
+    description: 'Official app to top up your transit card via NFC on your phone.',
+    tip: 'No more hunting for kiosks to reload',
+    store: 'App Store & Google Play'
+  },
+  {
+    name: 'Google Maps',
+    icon: '🗺️',
+    description: 'Download Istanbul area for offline use before your trip.',
+    tip: 'Works without data - essential for navigating side streets',
+    store: 'Download offline maps in app settings'
+  },
+  {
+    name: 'Google Translate',
+    icon: '📷',
+    description: 'Camera mode instantly translates menus, signs, and text.',
+    tip: 'Download Turkish for offline use',
+    store: 'App Store & Google Play'
+  },
 ]
 
 const practicalInfo = {
@@ -1212,8 +1280,49 @@ function PracticalSection() {
         <p className="text-text-secondary">Everything you need to know</p>
       </div>
 
+      {/* Winter Treats - January Special */}
+      <ExpandableCard title="Winter Treats ❄️" icon={<Snowflake className="w-4 h-4" />} defaultOpen>
+        <div className="space-y-3">
+          <p className="text-sm text-text-secondary mb-3">
+            January is perfect for Istanbul's cozy winter specialties!
+          </p>
+          {winterTreats.map((treat, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-3">
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="font-medium text-text-primary">{treat.name}</h4>
+                <span className="text-xs text-green-400">{treat.price}</span>
+              </div>
+              <p className="text-xs text-orange-400 italic mb-1">{treat.turkish}</p>
+              <p className="text-sm text-text-secondary">{treat.description}</p>
+              <p className="text-xs text-text-muted mt-2">📍 {treat.where}</p>
+              <p className="text-xs text-orange-400 mt-1">💡 {treat.tip}</p>
+            </div>
+          ))}
+        </div>
+      </ExpandableCard>
+
+      {/* Essential Apps */}
+      <ExpandableCard title="Essential Apps" icon={<Download className="w-4 h-4" />} defaultOpen>
+        <div className="space-y-3">
+          <p className="text-sm text-text-secondary mb-3">
+            Download these before you leave home!
+          </p>
+          {essentialApps.map((app, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{app.icon}</span>
+                <h4 className="font-medium text-text-primary">{app.name}</h4>
+              </div>
+              <p className="text-sm text-text-secondary">{app.description}</p>
+              <p className="text-xs text-orange-400 mt-1">💡 {app.tip}</p>
+              <p className="text-xs text-text-muted mt-1">{app.store}</p>
+            </div>
+          ))}
+        </div>
+      </ExpandableCard>
+
       {/* Transport */}
-      <ExpandableCard title="Getting Around" icon={<Train className="w-4 h-4" />} defaultOpen>
+      <ExpandableCard title="Getting Around" icon={<Train className="w-4 h-4" />}>
         <div className="space-y-3">
           {practicalInfo.transport.map((item, i) => (
             <div key={i} className="bg-white/5 rounded-lg p-3">
