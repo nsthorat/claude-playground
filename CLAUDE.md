@@ -4,26 +4,38 @@ A collection of mini apps and experiments, built with React, Vite, and Tailwind 
 
 ## Project Structure
 
-This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point for proper social sharing previews.
+This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point for proper social sharing previews. Apps are **auto-discovered** from `app.config.tsx` files.
 
 ```
 /
 ├── index.html                  # Home page entry
 ├── sensors/
 │   └── index.html              # Sensors app entry (with unique OG meta tags)
+├── audio/
+│   └── index.html              # Audio visualizer entry
+├── ribeye/
+│   └── index.html              # Ribeye recipe entry
 ├── src/
 │   ├── apps/
-│   │   └── sensors/
-│   │       └── main.tsx        # Sensors app React entry
+│   │   ├── sensors/main.tsx    # Sensors app React entry
+│   │   ├── audio/main.tsx      # Audio app React entry
+│   │   └── ribeye/main.tsx     # Ribeye app React entry
 │   ├── components/
 │   │   └── ui/
 │   │       └── magic-card.tsx  # Reusable card with spotlight hover effect
 │   ├── lib/
 │   │   └── utils.ts            # Utility functions (cn for classnames)
 │   ├── pages/
-│   │   ├── Home.tsx            # Bento grid home page
-│   │   └── sensors/
-│   │       └── index.tsx       # Sensor diagnostics mini-app
+│   │   ├── Home.tsx            # Bento grid home page (auto-discovers apps)
+│   │   ├── sensors/
+│   │   │   ├── index.tsx       # Sensor diagnostics component
+│   │   │   └── app.config.tsx  # App metadata for home page listing
+│   │   ├── audio/
+│   │   │   ├── index.tsx       # Audio visualizer component
+│   │   │   └── app.config.tsx  # App metadata for home page listing
+│   │   └── ribeye/
+│   │       ├── index.tsx       # Ribeye recipe component
+│   │       └── app.config.tsx  # App metadata for home page listing
 │   ├── index.css               # Global styles + Tailwind theme
 │   └── main.tsx                # Home page React entry
 ├── vite.config.js              # MPA build configuration
@@ -110,7 +122,29 @@ export default function MyApp() {
 }
 ```
 
-### 4. Add to Vite config
+### 4. Create the app config (auto-discovery)
+
+Create `src/pages/my-app/app.config.tsx` - this is how the home page discovers your app:
+
+```tsx
+import { SomeIcon } from 'lucide-react'
+
+export const appConfig = {
+  id: 'my-app',
+  title: 'My App',
+  description: 'Description of what this app does.',
+  icon: <SomeIcon className="w-6 h-6" />,
+  path: '/my-app/',
+  status: 'available' as const,  // or 'coming-soon'
+  gradient: 'from-accent-cyan/20 to-accent-purple/20',
+  size: 'small' as const,  // or 'large' for featured apps
+  order: 10,  // Lower numbers appear first
+}
+```
+
+The home page uses `import.meta.glob` to automatically discover all `app.config.tsx` files and display them in the bento grid, sorted by `order`.
+
+### 5. Add to Vite config
 
 Update `vite.config.js` to include the new entry:
 
@@ -122,23 +156,6 @@ rollupOptions: {
     'my-app': resolve(__dirname, 'my-app/index.html'),  // Add this
   },
 },
-```
-
-### 5. Add to home page grid
-
-Update `src/pages/Home.tsx` - add to the `miniApps` array:
-
-```tsx
-{
-  id: 'my-app',
-  title: 'My App',
-  description: 'Description of what this app does.',
-  icon: <SomeIcon className="w-6 h-6" />,
-  path: '/my-app/',
-  status: 'available',  // or 'coming-soon'
-  gradient: 'from-accent-cyan/20 to-accent-purple/20',
-  size: 'small',  // or 'large' for featured apps
-}
 ```
 
 ## Theme Colors
@@ -163,6 +180,8 @@ Use with Tailwind: `bg-bg-card`, `text-accent-cyan`, etc.
 
 - **Space Grotesk** - Display font for headings
 - **JetBrains Mono** - Monospace for code/data
+- **Playfair Display** - Serif for special styling (ribeye)
+- **Libre Baskerville** - Serif for body text (ribeye)
 
 ## Components
 
@@ -210,6 +229,7 @@ URL: https://nsthorat.github.io/claude-playground/
 ## Architecture Notes
 
 - **MPA (Multi-Page App)**: Each mini-app has its own `index.html` for unique social sharing meta tags (OG tags)
+- **Auto-Discovery**: Home page uses `import.meta.glob('./*/app.config.tsx')` to find all apps
 - **No React Router**: Navigation uses regular `<a>` tags with full page loads
 - **Base Path**: All links use `/claude-playground/` prefix for GitHub Pages
 - **Vite MPA Build**: Uses `rollupOptions.input` to build multiple entry points
