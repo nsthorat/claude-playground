@@ -320,28 +320,32 @@ const essentialApps = [
     icon: '🚕',
     description: 'Taxi app that shows fare estimates and tracks your ride. Avoids scams.',
     tip: 'Much safer than street hails - see driver rating and car details',
-    store: 'App Store & Google Play'
+    appStore: 'https://apps.apple.com/app/bitaksi/id589500723',
+    playStore: 'https://play.google.com/store/apps/details?id=com.bitaksi.android'
   },
   {
     name: 'Istanbulkart',
     icon: '🚇',
     description: 'Official app to top up your transit card via NFC on your phone.',
     tip: 'No more hunting for kiosks to reload',
-    store: 'App Store & Google Play'
+    appStore: 'https://apps.apple.com/app/istanbulkart/id1437055386',
+    playStore: 'https://play.google.com/store/apps/details?id=com.bfreel.istanbulkart'
   },
   {
     name: 'Google Maps',
     icon: '🗺️',
     description: 'Download Istanbul area for offline use before your trip.',
     tip: 'Works without data - essential for navigating side streets',
-    store: 'Download offline maps in app settings'
+    appStore: 'https://apps.apple.com/app/google-maps/id585027354',
+    playStore: 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps'
   },
   {
     name: 'Google Translate',
     icon: '📷',
     description: 'Camera mode instantly translates menus, signs, and text.',
     tip: 'Download Turkish for offline use',
-    store: 'App Store & Google Play'
+    appStore: 'https://apps.apple.com/app/google-translate/id414706506',
+    playStore: 'https://play.google.com/store/apps/details?id=com.google.android.apps.translate'
   },
 ]
 
@@ -1524,7 +1528,24 @@ function PracticalSection() {
               </div>
               <p className="text-sm text-text-secondary">{app.description}</p>
               <p className="text-xs text-orange-400 mt-1">💡 {app.tip}</p>
-              <p className="text-xs text-text-muted mt-1">{app.store}</p>
+              <div className="flex gap-2 mt-2">
+                <a
+                  href={app.appStore}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 text-text-primary hover:bg-white/20 transition-colors text-xs"
+                >
+                  <span>🍎</span> App Store
+                </a>
+                <a
+                  href={app.playStore}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 text-text-primary hover:bg-white/20 transition-colors text-xs"
+                >
+                  <span>▶️</span> Google Play
+                </a>
+              </div>
             </div>
           ))}
         </div>
