@@ -2026,6 +2026,7 @@ export default function Istanbul() {
             <a
               href={`${BASE_PATH}/`}
               className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              data-og-hide
             >
               <ArrowLeft className="w-5 h-5 text-text-secondary" />
             </a>

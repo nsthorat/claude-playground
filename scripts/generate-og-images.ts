@@ -119,14 +119,20 @@ async function generateImages() {
         }
       })
 
+      // Build URL with ?og=1 param to hide back buttons
       // For Istanbul, use the history tab to avoid showing empty map iframes
-      let url = `${BASE_URL}${app.path}`
+      let url = `${BASE_URL}${app.path}?og=1`
       if (app.path.includes('istanbul')) {
-        url = `${BASE_URL}${app.path}#history`
+        url = `${BASE_URL}${app.path}?og=1#history`
       }
       console.log(`Capturing ${url}...`)
 
       await page.goto(url, { waitUntil: 'networkidle' })
+
+      // Hide elements marked with data-og-hide for cleaner OG images
+      await page.addStyleTag({
+        content: `[data-og-hide] { display: none !important; }`
+      })
 
       // Wait for page to fully load and animations to settle
       await page.waitForTimeout(2000)

@@ -47,12 +47,12 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
           animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
         }}
       >
-        {/* Preview Image */}
-        <div className="relative w-full aspect-[430/932] overflow-hidden bg-bg-primary">
+        {/* Preview Image - cropped to show top portion */}
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-bg-primary">
           <img
             src={previewImage}
             alt={`${app.title} preview`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-auto object-cover object-top group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
           {/* Gradient overlay */}

@@ -530,6 +530,7 @@ export default function RibeyeRecipe() {
             href={`${BASE_PATH}/recipes/`}
             className="inline-flex items-center gap-2 mb-3 text-sm font-medium transition-colors"
             style={{ color: colors.brown }}
+            data-og-hide
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Recipes
