@@ -18,6 +18,7 @@ export default defineConfig({
         ribeye: resolve(__dirname, 'ribeye/index.html'),
         fluid: resolve(__dirname, 'fluid/index.html'),
         istanbul: resolve(__dirname, 'istanbul/index.html'),
+        water: resolve(__dirname, 'water/index.html'),
       },
     },
   },
