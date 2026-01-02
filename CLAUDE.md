@@ -218,14 +218,19 @@ bun run preview   # Preview production build
 
 ## Deployment
 
-GitHub Pages serves from the `docs/` folder on the `main` branch.
+Deployment is fully automated via GitHub Actions. When you push to `main`, the workflow:
 
-**Pre-commit hook (automatic):** A git pre-commit hook runs `bun run publish` automatically before each commit and stages the `docs/` folder. The hook is enabled automatically via `postinstall` when you run `bun install`. This ensures the production build is always up to date.
+1. Builds the site with `bun run build`
+2. Generates OG images with Playwright
+3. Deploys to GitHub Pages
 
-**Manual deployment:**
-1. Run `bun run publish` to build
-2. Commit the updated `docs/` folder
-3. Push to main branch
+**No need to commit build artifacts** - the `docs/` folder is gitignored and built in CI.
+
+**Local preview:**
+```bash
+bun run publish   # Build + generate OG images locally
+bun run preview   # Serve the built site
+```
 
 URL: https://nikubaba.com/claude-playground/
 
