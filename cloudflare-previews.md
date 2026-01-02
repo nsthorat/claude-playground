@@ -6,7 +6,7 @@ This project uses Cloudflare Pages for automatic PR preview deployments.
 
 When a PR is opened or updated, Cloudflare automatically:
 1. Builds the site with `bun run build`
-2. Deploys to a unique preview URL like `<commit-hash>.claude-playground.pages.dev`
+2. Deploys to a unique preview URL like `<commit-hash>.claude-apps.pages.dev`
 3. Comments on the PR with the preview link
 
 ## Setup Instructions
@@ -43,7 +43,7 @@ No environment variables are required for the basic build.
 ## Preview URLs
 
 - Production: `https://nikubaba.com/claude-playground/`
-- PR Previews: `https://<hash>.claude-playground.pages.dev/claude-playground/`
+- PR Previews: `https://<hash>.claude-apps.pages.dev/claude-playground/`
 
 ## Troubleshooting
 
