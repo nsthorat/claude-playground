@@ -134,16 +134,15 @@ export const appConfig = {
   id: 'my-app',
   title: 'My App',
   description: 'Description of what this app does.',
-  icon: <SomeIcon className="w-6 h-6" />,
+  icon: <SomeIcon className="w-5 h-5" />,
   path: '/my-app/',
   status: 'available' as const,  // or 'coming-soon'
   gradient: 'from-accent-cyan/20 to-accent-purple/20',
-  size: 'small' as const,  // or 'large' for featured apps
   order: 10,  // Lower numbers appear first
 }
 ```
 
-The home page uses `import.meta.glob` to automatically discover all `app.config.tsx` files and display them in the bento grid, sorted by `order`.
+The home page uses `import.meta.glob` to automatically discover all `app.config.tsx` files and display them in a 2-column grid, sorted by `order`. Each card automatically displays the app's OG preview image from `{path}og-image.png`.
 
 ### 5. Add to Vite config
 
