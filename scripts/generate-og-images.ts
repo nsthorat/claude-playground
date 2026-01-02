@@ -102,7 +102,7 @@ async function generateImages() {
   try {
     for (const app of apps) {
       const page = await browser.newPage({
-        viewport: { width: 1200, height: 630 },
+        viewport: { width: 430, height: 932 }, // iPhone 16 Pro Max
       })
 
       // Capture console errors
