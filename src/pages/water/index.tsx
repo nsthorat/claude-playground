@@ -9,10 +9,11 @@ export default function WaterSimulation() {
   const [orientationStatus, setOrientationStatus] = useState<
     'unknown' | 'prompt' | 'granted' | 'denied' | 'unavailable'
   >('unknown')
-  const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const [isReady, setIsReady] = useState(false)
 
-  const smoothTiltRef = useRef({ x: 0, y: 0 })
+  // Use a ref for tilt that WaterSurface can read directly in useFrame
+  const tiltRef = useRef({ x: 0, y: 0 })
+  const [tiltDisplay, setTiltDisplay] = useState({ x: 0, y: 0 })
 
   // Check for device orientation support
   useEffect(() => {
@@ -22,20 +23,6 @@ export default function WaterSimulation() {
       setOrientationStatus('unavailable')
     }
   }, [])
-
-  // Smooth tilt updates
-  useEffect(() => {
-    let animationId: number
-
-    const updateTilt = () => {
-      smoothTiltRef.current.x += (tilt.x - smoothTiltRef.current.x) * 0.15
-      smoothTiltRef.current.y += (tilt.y - smoothTiltRef.current.y) * 0.15
-      animationId = requestAnimationFrame(updateTilt)
-    }
-
-    animationId = requestAnimationFrame(updateTilt)
-    return () => cancelAnimationFrame(animationId)
-  }, [tilt])
 
   // Request orientation permission
   const requestOrientation = useCallback(async () => {
@@ -63,10 +50,14 @@ export default function WaterSimulation() {
     window.addEventListener('deviceorientation', (e) => {
       const beta = e.beta ?? 0
       const gamma = e.gamma ?? 0
-      // Tilt range: -1 to 1
-      const x = Math.max(-1, Math.min(1, gamma / 30))
-      const y = Math.max(-1, Math.min(1, (beta - 45) / 30))
-      setTilt({ x, y })
+      // Tilt range: -1 to 1, more sensitive
+      const x = Math.max(-1, Math.min(1, gamma / 20))
+      const y = Math.max(-1, Math.min(1, (beta - 45) / 20))
+      // Update ref directly (for useFrame to read)
+      tiltRef.current.x = x
+      tiltRef.current.y = y
+      // Update state for UI indicator
+      setTiltDisplay({ x, y })
     })
   }
 
@@ -93,7 +84,7 @@ export default function WaterSimulation() {
 
         <Suspense fallback={null}>
           <WaterSurface
-            tilt={smoothTiltRef.current}
+            tiltRef={tiltRef}
             onReady={() => setIsReady(true)}
           />
         </Suspense>
@@ -131,8 +122,8 @@ export default function WaterSimulation() {
           <div
             className="absolute w-2 h-2 rounded-full bg-cyan-400"
             style={{
-              left: `${50 + smoothTiltRef.current.x * 35}%`,
-              top: `${50 + smoothTiltRef.current.y * 35}%`,
+              left: `${50 + tiltDisplay.x * 35}%`,
+              top: `${50 + tiltDisplay.y * 35}%`,
               transform: 'translate(-50%, -50%)',
             }}
           />

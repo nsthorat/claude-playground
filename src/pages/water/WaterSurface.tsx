@@ -36,9 +36,19 @@ const heightmapShader = `
     float newHeight = ((north.x + south.x + east.x + west.x) * 0.5 - heightmapValue.y) * uViscosity;
 
     // Add tilt-based gravity effect - water flows to the lower side
+    // This creates the "sloshing" effect when the phone is tilted
     vec2 pos = (uv - 0.5) * 2.0; // -1 to 1
-    float tiltForce = dot(pos, uTilt) * 0.002;
+    float tiltForce = dot(pos, uTilt) * 0.015; // Much stronger tilt response
     newHeight += tiltForce;
+
+    // Add velocity from tilt changes (creates waves when tilting quickly)
+    float tiltMagnitude = length(uTilt);
+    if (tiltMagnitude > 0.1) {
+      // Push water away from the high side
+      vec2 tiltDir = normalize(uTilt);
+      float edgeWave = max(0.0, dot(pos, tiltDir) + 0.3);
+      newHeight += edgeWave * tiltMagnitude * 0.02;
+    }
 
     // Mouse/touch interaction - create ripples
     if (uMousePos.x > -0.4) {
@@ -103,7 +113,7 @@ const waterVertexShader = `
   }
 `
 
-// Water fragment shader - realistic water appearance
+// Water fragment shader - realistic pool/bucket water
 const waterFragmentShader = `
   uniform vec3 uWaterColor;
   uniform vec3 uDeepColor;
@@ -118,55 +128,65 @@ const waterFragmentShader = `
     vec3 normal = normalize(vNormal);
     vec3 viewDir = normalize(vViewPosition);
 
-    // Fake environment reflection
-    vec3 reflectDir = reflect(-viewDir, normal);
-    float skyFactor = smoothstep(-0.2, 0.8, reflectDir.z);
-    vec3 skyColor = mix(vec3(0.1, 0.15, 0.3), vec3(0.5, 0.7, 1.0), skyFactor);
+    // Base water color - deeper blue where water is lower
+    float depthFactor = smoothstep(-15.0, 15.0, vHeight);
+    vec3 waterBase = mix(uDeepColor, uWaterColor, depthFactor * 0.7 + 0.3);
 
-    // Fresnel effect - edges are more reflective
-    float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 3.0);
-    fresnel = mix(0.1, 1.0, fresnel);
+    // Subtle gradient based on surface normal tilt
+    float normalTilt = (normal.x + normal.y) * 0.5;
+    waterBase += normalTilt * vec3(0.02, 0.05, 0.08);
 
-    // Base water color varies with depth (height)
-    float depthFactor = smoothstep(-20.0, 20.0, vHeight);
-    vec3 waterBase = mix(uDeepColor, uWaterColor, depthFactor);
+    // Soft diffuse lighting from above
+    vec3 lightDir = normalize(vec3(0.2, 0.2, 1.0));
+    float diffuse = max(dot(normal, lightDir), 0.0);
+    waterBase *= 0.7 + diffuse * 0.4;
 
-    // Specular highlights
-    vec3 lightDir = normalize(vec3(0.5, 0.3, 1.0));
+    // Gentle specular highlights - not too sharp
     vec3 halfDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfDir), 0.0), 256.0);
-    vec3 specular = vec3(1.0) * spec * 2.0;
+    float spec = pow(max(dot(normal, halfDir), 0.0), 64.0);
+    vec3 specular = vec3(0.9, 0.95, 1.0) * spec * 0.5;
 
-    // Second light for more dynamic look
-    vec3 lightDir2 = normalize(vec3(-0.3, -0.5, 0.8));
+    // Second softer specular
+    vec3 lightDir2 = normalize(vec3(-0.3, 0.1, 0.9));
     vec3 halfDir2 = normalize(lightDir2 + viewDir);
-    float spec2 = pow(max(dot(normal, halfDir2), 0.0), 128.0);
-    specular += vec3(0.8, 0.9, 1.0) * spec2;
+    float spec2 = pow(max(dot(normal, halfDir2), 0.0), 32.0);
+    specular += vec3(0.7, 0.8, 0.9) * spec2 * 0.3;
+
+    // Fresnel - subtle edge brightening
+    float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 2.0);
+    fresnel = fresnel * 0.3;
 
     // Combine
-    vec3 color = mix(waterBase, skyColor, fresnel * 0.6);
+    vec3 color = waterBase;
     color += specular;
+    color = mix(color, vec3(0.4, 0.6, 0.8), fresnel);
 
-    // Subtle caustic pattern
-    float caustic = sin(vUv.x * 60.0 + uTime) * sin(vUv.y * 60.0 + uTime * 0.7);
-    caustic = (caustic * 0.5 + 0.5) * 0.1 * (1.0 - abs(vHeight) / 30.0);
-    color += caustic * vec3(0.2, 0.5, 0.8);
+    // Caustic pattern on the "bottom" - visible through water
+    float caustic1 = sin(vUv.x * 40.0 + uTime * 0.5) * sin(vUv.y * 40.0 + uTime * 0.3);
+    float caustic2 = sin(vUv.x * 30.0 - uTime * 0.4) * sin(vUv.y * 35.0 - uTime * 0.6);
+    float caustics = (caustic1 + caustic2) * 0.25 + 0.5;
+    caustics = caustics * 0.08 * (1.0 - depthFactor * 0.5);
+    color += caustics * vec3(0.1, 0.2, 0.3);
 
-    // Darken edges slightly (bucket walls effect)
+    // Darken edges (bucket/pool walls)
     float edge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
-    float vignette = smoothstep(0.0, 0.08, edge);
-    color *= mix(0.5, 1.0, vignette);
+    float vignette = smoothstep(0.0, 0.1, edge);
+    color *= mix(0.3, 1.0, vignette);
+
+    // Slightly desaturate for more natural look
+    float gray = dot(color, vec3(0.299, 0.587, 0.114));
+    color = mix(vec3(gray), color, 0.85);
 
     gl_FragColor = vec4(color, 1.0);
   }
 `
 
 interface WaterSurfaceProps {
-  tilt: { x: number; y: number }
+  tiltRef: React.RefObject<{ x: number; y: number }>
   onReady?: () => void
 }
 
-export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
+export default function WaterSurface({ tiltRef, onReady }: WaterSurfaceProps) {
   const meshRef = useRef<THREE.Mesh>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   const gpuComputeRef = useRef<GPUComputationRenderer | null>(null)
@@ -254,15 +274,17 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
 
     if (!gpuCompute || !heightmapVar) return
 
-    // Update tilt
-    const hasDeviceTilt = Math.abs(tilt.x) > 0.01 || Math.abs(tilt.y) > 0.01
+    // Read tilt from ref (updated by deviceorientation events)
+    const tilt = tiltRef.current
+    const hasDeviceTilt = tilt && (Math.abs(tilt.x) > 0.02 || Math.abs(tilt.y) > 0.02)
 
-    if (hasDeviceTilt) {
-      heightmapVar.material.uniforms.uTilt.value.set(tilt.x, tilt.y)
+    if (hasDeviceTilt && tilt) {
+      // Apply device tilt with amplification
+      heightmapVar.material.uniforms.uTilt.value.set(tilt.x * 1.5, tilt.y * 1.5)
     } else {
-      // Auto-animate for desktop - gentle sloshing
-      const autoTiltX = Math.sin(time * 0.4) * 0.3 + Math.sin(time * 0.7) * 0.15
-      const autoTiltY = Math.cos(time * 0.35) * 0.25 + Math.cos(time * 0.6) * 0.1
+      // Auto-animate for desktop - more dramatic sloshing
+      const autoTiltX = Math.sin(time * 0.5) * 0.5 + Math.sin(time * 0.9) * 0.25
+      const autoTiltY = Math.cos(time * 0.4) * 0.4 + Math.cos(time * 0.8) * 0.2
       heightmapVar.material.uniforms.uTilt.value.set(autoTiltX, autoTiltY)
     }
 
