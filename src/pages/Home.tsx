@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom'
 import { MagicCard } from '@/components/ui/magic-card'
 import { Smartphone, Palette, Music, Clock, FileText, Gamepad2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const BASE_PATH = '/claude-playground'
 
 interface MiniApp {
   id: string
@@ -20,7 +21,7 @@ const miniApps: MiniApp[] = [
     title: 'Sensor Diagnostics',
     description: 'Test iOS web sensor APIs including motion, orientation, geolocation, and camera.',
     icon: <Smartphone className="w-8 h-8" />,
-    path: '/sensors',
+    path: '/sensors/',
     status: 'available',
     gradient: 'from-accent-cyan/20 to-accent-purple/20',
     size: 'large',
@@ -30,7 +31,7 @@ const miniApps: MiniApp[] = [
     title: 'Color Picker',
     description: 'EyeDropper API demo',
     icon: <Palette className="w-6 h-6" />,
-    path: '/colors',
+    path: '/colors/',
     status: 'coming-soon',
     gradient: 'from-accent-green/20 to-accent-cyan/20',
     size: 'small',
@@ -40,7 +41,7 @@ const miniApps: MiniApp[] = [
     title: 'Audio Visualizer',
     description: 'Web Audio API visualization',
     icon: <Music className="w-6 h-6" />,
-    path: '/audio',
+    path: '/audio/',
     status: 'coming-soon',
     gradient: 'from-accent-purple/20 to-accent-red/20',
     size: 'small',
@@ -50,7 +51,7 @@ const miniApps: MiniApp[] = [
     title: 'Timer',
     description: 'Precision timing APIs',
     icon: <Clock className="w-6 h-6" />,
-    path: '/timer',
+    path: '/timer/',
     status: 'coming-soon',
     gradient: 'from-accent-yellow/20 to-accent-green/20',
     size: 'small',
@@ -60,7 +61,7 @@ const miniApps: MiniApp[] = [
     title: 'Clipboard',
     description: 'Clipboard API demo',
     icon: <FileText className="w-6 h-6" />,
-    path: '/clipboard',
+    path: '/clipboard/',
     status: 'coming-soon',
     gradient: 'from-accent-cyan/20 to-accent-green/20',
     size: 'small',
@@ -70,7 +71,7 @@ const miniApps: MiniApp[] = [
     title: 'Gamepad',
     description: 'Gamepad API tester',
     icon: <Gamepad2 className="w-6 h-6" />,
-    path: '/gamepad',
+    path: '/gamepad/',
     status: 'coming-soon',
     gradient: 'from-accent-red/20 to-accent-yellow/20',
     size: 'small',
@@ -138,7 +139,7 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
   )
 
   if (isAvailable) {
-    return <Link to={app.path} className="contents">{content}</Link>
+    return <a href={`${BASE_PATH}${app.path}`} className="contents">{content}</a>
   }
 
   return content
