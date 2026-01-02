@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { MagicCard } from '@/components/ui/magic-card'
-import { Smartphone, Palette, Music, Clock, FileText, Gamepad2 } from 'lucide-react'
+import { Smartphone, Palette, Music, Clock, FileText, Gamepad2, Droplets } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MiniApp {
@@ -23,6 +23,16 @@ const miniApps: MiniApp[] = [
     path: '/sensors',
     status: 'available',
     gradient: 'from-accent-cyan/20 to-accent-purple/20',
+    size: 'large',
+  },
+  {
+    id: 'fluid',
+    title: 'Fluid Simulation',
+    description: 'GPU-accelerated fluid dynamics. Tilt your phone to control gravity!',
+    icon: <Droplets className="w-8 h-8" />,
+    path: '/fluid',
+    status: 'available',
+    gradient: 'from-accent-purple/20 to-accent-cyan/20',
     size: 'large',
   },
   {
