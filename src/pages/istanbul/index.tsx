@@ -1630,6 +1630,73 @@ function PracticalSection() {
           Pharmacies (Eczane) have green cross signs. Many speak English.
         </p>
       </div>
+
+      {/* External Resources */}
+      <ExpandableCard title="Learn More" icon={<BookOpen className="w-4 h-4" />}>
+        <div className="space-y-2">
+          <p className="text-sm text-text-secondary mb-3">Helpful resources for trip planning:</p>
+          <a
+            href="https://istanbul-tourist-information.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">Istanbul Tourist Information</h4>
+              <p className="text-xs text-text-muted">Official tourism guide</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://istanbeautiful.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">IstanBeautiful</h4>
+              <p className="text-xs text-text-muted">Local tips & hidden gems</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://www.tripadvisor.com/Tourism-g293974-Istanbul-Vacations.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">TripAdvisor Istanbul</h4>
+              <p className="text-xs text-text-muted">Reviews & recommendations</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://www.lonelyplanet.com/turkey/istanbul"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">Lonely Planet Istanbul</h4>
+              <p className="text-xs text-text-muted">In-depth travel guide</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+          <a
+            href="https://www.timeout.com/istanbul"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <div>
+              <h4 className="font-medium text-text-primary text-sm">Time Out Istanbul</h4>
+              <p className="text-xs text-text-muted">Events, restaurants, nightlife</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-text-muted" />
+          </a>
+        </div>
+      </ExpandableCard>
     </div>
   )
 }
