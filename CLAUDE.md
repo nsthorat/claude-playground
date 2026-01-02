@@ -220,7 +220,7 @@ bun run preview   # Preview production build
 
 Deployment is fully automated via GitHub Actions. When you push to `main`, the workflow builds and deploys to GitHub Pages.
 
-**PR Previews:** Cloudflare Pages is connected for automatic PR preview deployments.
+**PR Previews:** Cloudflare Pages is connected for automatic PR preview deployments. See [cloudflare-previews.md](./cloudflare-previews.md) for setup instructions.
 
 **No need to commit build artifacts** - the `docs/` folder is gitignored and built in CI.
 
