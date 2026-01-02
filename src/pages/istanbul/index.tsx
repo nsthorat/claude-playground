@@ -685,9 +685,9 @@ function PlaceCard({ place }: { place: Place }) {
       {expanded && (
         <div className="px-4 pb-4 space-y-3">
           {/* Embedded Map */}
-          <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+          <div className="rounded-lg overflow-hidden border border-white/10 aspect-[4/3]">
             <iframe
-              src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(place.name + ' Istanbul')}&zoom=17`}
+              src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(place.name + ' Istanbul')}&zoom=14`}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -744,7 +744,7 @@ function MapSection() {
   }
 
   // Create Google Maps embed URL with markers
-  const mapUrl = `https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${GALATA_CENTER.lat},${GALATA_CENTER.lng}&zoom=15&maptype=roadmap`
+  const mapUrl = `https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${GALATA_CENTER.lat},${GALATA_CENTER.lng}&zoom=13&maptype=roadmap`
 
   return (
     <div className="space-y-6">
@@ -1051,9 +1051,9 @@ function NeighborhoodsSection() {
             {expandedHood === hood.id && (
               <div className="px-4 pb-4 space-y-3">
                 {/* Embedded Map */}
-                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[4/3]">
                   <iframe
-                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(hood.name + ' Istanbul')}&zoom=15`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(hood.name + ' Istanbul')}&zoom=13`}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -1392,9 +1392,9 @@ function HistoricalSection() {
                 </div>
 
                 {/* Embedded Map */}
-                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[2/1]">
+                <div className="rounded-lg overflow-hidden border border-white/10 aspect-[4/3]">
                   <iframe
-                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(site.name + ' Istanbul')}&zoom=16`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(site.name + ' Istanbul')}&zoom=14`}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -1596,28 +1596,6 @@ export default function Istanbul() {
         {activeTab === 'neighborhoods' && <NeighborhoodsSection />}
         {activeTab === 'experiences' && <ExperiencesSection />}
         {activeTab === 'practical' && <PracticalSection />}
-      </div>
-
-      {/* Bottom Quick Actions */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur-lg border-t border-white/10 p-4">
-        <div className="max-w-2xl mx-auto flex gap-3">
-          <a
-            href="https://www.google.com/maps/search/?api=1&query=Galata+Tower+Istanbul"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-white/10 text-text-primary hover:bg-white/20 transition-colors"
-          >
-            <MapPin className="w-5 h-5" />
-            Open Maps
-          </a>
-          <a
-            href="tel:112"
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-          >
-            <Phone className="w-5 h-5" />
-            112
-          </a>
-        </div>
       </div>
     </div>
   )
