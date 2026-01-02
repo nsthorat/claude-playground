@@ -3,193 +3,159 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js'
 
-const WIDTH = 128 // Simulation resolution
-const MESH_RES = 256 // Higher geometry resolution for smoother rendering
+// Based on Three.js official GPGPU water example
+// https://threejs.org/examples/webgl_gpgpu_water.html
 
-// Heightmap simulation shader - wave equation with tilt gravity
+const WIDTH = 128 // Simulation resolution
+const BOUNDS = 512 // Water surface size
+
+// Heightmap simulation shader - proper wave equation
+// Stores: x = current height, y = previous height
 const heightmapShader = `
-  uniform vec2 uTilt;        // Current tilt (-1 to 1)
-  uniform vec2 uTiltVelocity; // Rate of tilt change (for impulses)
-  uniform float uDamping;
-  uniform float uWaveSpeed;
-  uniform float uTime;
-  uniform vec2 uDropPos;     // Position for rain drop
-  uniform float uDropStrength; // Strength of drop
+  uniform vec2 uMousePos;
+  uniform float uMouseSize;
+  uniform float uViscosity;
+  uniform float uDropStrength;
+  uniform vec2 uTilt;
+
+  #define PI 3.141592653589793
 
   void main() {
     vec2 cellSize = 1.0 / resolution.xy;
     vec2 uv = gl_FragCoord.xy * cellSize;
 
-    // Sample neighbors
-    float center = texture2D(heightmap, uv).x;
-    float velocity = texture2D(heightmap, uv).y;
+    // Get current and neighboring heights
+    vec4 heightmapValue = texture2D(heightmap, uv);
+    vec4 north = texture2D(heightmap, uv + vec2(0.0, cellSize.y));
+    vec4 south = texture2D(heightmap, uv + vec2(0.0, -cellSize.y));
+    vec4 east = texture2D(heightmap, uv + vec2(cellSize.x, 0.0));
+    vec4 west = texture2D(heightmap, uv + vec2(-cellSize.x, 0.0));
 
-    float north = texture2D(heightmap, uv + vec2(0.0, cellSize.y)).x;
-    float south = texture2D(heightmap, uv + vec2(0.0, -cellSize.y)).x;
-    float east = texture2D(heightmap, uv + vec2(cellSize.x, 0.0)).x;
-    float west = texture2D(heightmap, uv + vec2(-cellSize.x, 0.0)).x;
+    // Wave equation: new height = (average of neighbors * 2 - previous) * damping
+    // This creates proper wave propagation with interference patterns
+    float newHeight = ((north.x + south.x + east.x + west.x) * 0.5 - heightmapValue.y) * uViscosity;
 
-    // Wave equation: acceleration = laplacian of height
-    float laplacian = (north + south + east + west) - 4.0 * center;
-    float acceleration = laplacian * uWaveSpeed;
+    // Add tilt-based gravity effect - water flows to the lower side
+    vec2 pos = (uv - 0.5) * 2.0; // -1 to 1
+    float tiltForce = dot(pos, uTilt) * 0.002;
+    newHeight += tiltForce;
 
-    // Gravity from tilt - pushes water toward the "low" side
-    vec2 pos = uv - 0.5; // Center coordinates
-    float gravityForce = dot(pos, uTilt) * 0.3;
-    acceleration += gravityForce;
-
-    // Impulse from rapid tilt changes - creates ripples at edges
-    float tiltSpeed = length(uTiltVelocity);
-    if (tiltSpeed > 0.01) {
-      vec2 impulseDir = normalize(uTiltVelocity);
-      // Create wave from the edge in the direction of tilt
-      float edgeProximity = max(0.0, dot(pos, impulseDir) + 0.4);
-      acceleration += edgeProximity * tiltSpeed * 1.5;
+    // Mouse/touch interaction - create ripples
+    if (uMousePos.x > -0.4) {
+      float mousePhase = clamp(
+        length((uv - vec2(0.5)) * float(${BOUNDS}) - vec2(uMousePos.x, -uMousePos.y)) * PI / uMouseSize,
+        0.0,
+        PI
+      );
+      newHeight -= (cos(mousePhase) + 1.0) * uDropStrength;
     }
 
-    // Rain drop effect
-    if (uDropStrength > 0.0) {
-      float dropDist = distance(uv, uDropPos);
-      if (dropDist < 0.05) {
-        float dropEffect = (0.05 - dropDist) / 0.05;
-        velocity -= dropEffect * uDropStrength * 0.5;
-      }
-    }
-
-    // Update velocity with damping
-    velocity = velocity * uDamping + acceleration;
-
-    // Update height
-    float newHeight = center + velocity;
-
-    // Boundary - waves reflect off edges
+    // Boundary conditions - dampen at edges
     float edgeDist = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
-    float boundary = smoothstep(0.0, 0.08, edgeDist);
+    float edgeDamping = smoothstep(0.0, 0.05, edgeDist);
+    newHeight *= edgeDamping;
 
-    // Hard boundary push - repel water from edges
-    if (edgeDist < 0.08) {
-      vec2 toCenter = normalize(vec2(0.5) - uv);
-      float pushStrength = (0.08 - edgeDist) / 0.08;
-      velocity += pushStrength * 0.1 * sign(dot(toCenter, vec2(1.0)));
-    }
+    // Store: x = new height, y = old height (for next frame)
+    heightmapValue.y = heightmapValue.x;
+    heightmapValue.x = newHeight;
 
-    newHeight *= boundary;
-    velocity *= mix(0.9, 1.0, boundary);
-
-    // Clamp to prevent instability
-    newHeight = clamp(newHeight, -1.0, 1.0);
-    velocity = clamp(velocity, -0.3, 0.3);
-
-    gl_FragColor = vec4(newHeight, velocity, 0.0, 1.0);
+    gl_FragColor = heightmapValue;
   }
 `
 
-// Water surface vertex shader
+// Water vertex shader - displace vertices based on heightmap
 const waterVertexShader = `
   uniform sampler2D uHeightmap;
-  uniform float uHeightScale;
 
   varying vec2 vUv;
-  varying float vHeight;
   varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  varying float vHeight;
 
   void main() {
     vUv = uv;
 
     // Sample height
-    float height = texture2D(uHeightmap, uv).x;
-    vHeight = height;
+    float heightValue = texture2D(uHeightmap, uv).x;
+    vHeight = heightValue;
 
-    // Calculate normal from heightmap - match simulation resolution
-    float texel = 1.0 / 128.0;
-    float hL = texture2D(uHeightmap, uv + vec2(-texel, 0.0)).x;
-    float hR = texture2D(uHeightmap, uv + vec2(texel, 0.0)).x;
-    float hD = texture2D(uHeightmap, uv + vec2(0.0, -texel)).x;
-    float hU = texture2D(uHeightmap, uv + vec2(0.0, texel)).x;
+    // Calculate normal from heightmap gradient
+    vec2 cellSize = vec2(1.0 / ${WIDTH}.0, 1.0 / ${WIDTH}.0);
+    float hL = texture2D(uHeightmap, uv - vec2(cellSize.x, 0.0)).x;
+    float hR = texture2D(uHeightmap, uv + vec2(cellSize.x, 0.0)).x;
+    float hD = texture2D(uHeightmap, uv - vec2(0.0, cellSize.y)).x;
+    float hU = texture2D(uHeightmap, uv + vec2(0.0, cellSize.y)).x;
 
-    // Smoother normal with less aggressive scaling
-    vec3 normal = normalize(vec3(
-      (hL - hR) * uHeightScale * 0.8,
-      0.4,
-      (hD - hU) * uHeightScale * 0.8
+    vec3 objectNormal = normalize(vec3(
+      (hL - hR) * ${WIDTH}.0 / ${BOUNDS}.0,
+      (hD - hU) * ${WIDTH}.0 / ${BOUNDS}.0,
+      1.0
     ));
-    vNormal = normalMatrix * normal;
+    vNormal = normalMatrix * objectNormal;
 
-    // Vertex position with height displacement
-    vec3 pos = position;
-    pos.z = height * uHeightScale;
+    // Displace vertex
+    vec3 transformed = vec3(position.x, position.y, heightValue);
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
+    vViewPosition = -mvPosition.xyz;
+
+    gl_Position = projectionMatrix * mvPosition;
   }
 `
 
-// Water surface fragment shader - top-down view with visible ripples
+// Water fragment shader - realistic water appearance
 const waterFragmentShader = `
   uniform vec3 uWaterColor;
   uniform vec3 uDeepColor;
-  uniform vec3 uHighlightColor;
   uniform float uTime;
 
   varying vec2 vUv;
-  varying float vHeight;
   varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  varying float vHeight;
 
   void main() {
     vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(vViewPosition);
 
-    // Multiple light sources for better wave visibility
-    vec3 lightDir1 = normalize(vec3(0.5, 1.0, 0.3));
-    vec3 lightDir2 = normalize(vec3(-0.3, 1.0, -0.5));
+    // Fake environment reflection
+    vec3 reflectDir = reflect(-viewDir, normal);
+    float skyFactor = smoothstep(-0.2, 0.8, reflectDir.z);
+    vec3 skyColor = mix(vec3(0.1, 0.15, 0.3), vec3(0.5, 0.7, 1.0), skyFactor);
 
-    float diffuse1 = max(dot(normal, lightDir1), 0.0);
-    float diffuse2 = max(dot(normal, lightDir2), 0.0) * 0.5;
+    // Fresnel effect - edges are more reflective
+    float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 3.0);
+    fresnel = mix(0.1, 1.0, fresnel);
 
-    // View from above
-    vec3 viewDir = vec3(0.0, 1.0, 0.0);
+    // Base water color varies with depth (height)
+    float depthFactor = smoothstep(-20.0, 20.0, vHeight);
+    vec3 waterBase = mix(uDeepColor, uWaterColor, depthFactor);
 
-    // Specular highlights - make waves shimmer
-    vec3 halfDir1 = normalize(lightDir1 + viewDir);
+    // Specular highlights
+    vec3 lightDir = normalize(vec3(0.5, 0.3, 1.0));
+    vec3 halfDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfDir), 0.0), 256.0);
+    vec3 specular = vec3(1.0) * spec * 2.0;
+
+    // Second light for more dynamic look
+    vec3 lightDir2 = normalize(vec3(-0.3, -0.5, 0.8));
     vec3 halfDir2 = normalize(lightDir2 + viewDir);
-    float spec1 = pow(max(dot(normal, halfDir1), 0.0), 128.0);
-    float spec2 = pow(max(dot(normal, halfDir2), 0.0), 64.0);
+    float spec2 = pow(max(dot(normal, halfDir2), 0.0), 128.0);
+    specular += vec3(0.8, 0.9, 1.0) * spec2;
 
-    // Height-based coloring - exaggerate for visibility
-    float heightFactor = clamp(vHeight * 2.0 + 0.5, 0.0, 1.0);
-    vec3 baseColor = mix(uDeepColor, uWaterColor, heightFactor);
+    // Combine
+    vec3 color = mix(waterBase, skyColor, fresnel * 0.6);
+    color += specular;
 
-    // Wave peaks are lighter
-    float peakHighlight = smoothstep(0.0, 0.3, vHeight) * 0.4;
-    baseColor += vec3(0.1, 0.2, 0.3) * peakHighlight;
+    // Subtle caustic pattern
+    float caustic = sin(vUv.x * 60.0 + uTime) * sin(vUv.y * 60.0 + uTime * 0.7);
+    caustic = (caustic * 0.5 + 0.5) * 0.1 * (1.0 - abs(vHeight) / 30.0);
+    color += caustic * vec3(0.2, 0.5, 0.8);
 
-    // Wave troughs are darker
-    float troughShadow = smoothstep(0.0, -0.3, vHeight) * 0.3;
-    baseColor -= vec3(0.05, 0.1, 0.15) * troughShadow;
-
-    // Normal-based shading - tilted surfaces catch light differently
-    float normalShade = (normal.x * 0.3 + normal.z * 0.2) * 0.5 + 0.5;
-    baseColor *= mix(0.8, 1.2, normalShade);
-
-    // Fresnel rim lighting
-    float fresnel = 1.0 - abs(normal.y);
-    fresnel = pow(fresnel, 3.0);
-
-    // Subtle caustics in troughs
-    float caustic = sin(vUv.x * 40.0 + uTime * 2.0) * sin(vUv.y * 40.0 + uTime * 1.7);
-    caustic = caustic * 0.5 + 0.5;
-    caustic *= (1.0 - heightFactor) * 0.15;
-
-    // Combine all effects
-    vec3 color = baseColor;
-    color += (diffuse1 + diffuse2) * 0.2;
-    color += spec1 * uHighlightColor * 1.2;
-    color += spec2 * uHighlightColor * 0.4;
-    color += fresnel * uHighlightColor * 0.3;
-    color += caustic * vec3(0.2, 0.4, 0.6);
-
-    // Edge darkening (bucket walls)
+    // Darken edges slightly (bucket walls effect)
     float edge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
-    float vignette = smoothstep(0.0, 0.1, edge);
-    color *= mix(0.4, 1.0, vignette);
+    float vignette = smoothstep(0.0, 0.08, edge);
+    color *= mix(0.5, 1.0, vignette);
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -204,20 +170,19 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
   const meshRef = useRef<THREE.Mesh>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   const gpuComputeRef = useRef<GPUComputationRenderer | null>(null)
-  const heightmapVarRef = useRef<{ material: THREE.ShaderMaterial } | null>(null)
-  const prevTiltRef = useRef({ x: 0, y: 0 })
-  const autoTiltRef = useRef({ x: 0, y: 0 })
-  const lastDropTimeRef = useRef(0)
+  const heightmapVarRef = useRef<ReturnType<GPUComputationRenderer['addVariable']> | null>(null)
+
+  const mousePosRef = useRef({ x: -1000, y: -1000 })
+  const lastDropRef = useRef(0)
+  const autoAnimRef = useRef(0)
 
   const { gl, viewport } = useThree()
 
   // Water material uniforms
   const uniforms = useMemo(() => ({
     uHeightmap: { value: null as THREE.Texture | null },
-    uHeightScale: { value: 0.5 }, // Balanced for visible but smooth waves
-    uWaterColor: { value: new THREE.Color(0x2288cc) },
-    uDeepColor: { value: new THREE.Color(0x0a4060) },
-    uHighlightColor: { value: new THREE.Color(0xccffff) },
+    uWaterColor: { value: new THREE.Color(0x0077be) },
+    uDeepColor: { value: new THREE.Color(0x001e3c) },
     uTime: { value: 0 },
   }), [])
 
@@ -231,19 +196,26 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
     const gpuCompute = new GPUComputationRenderer(WIDTH, WIDTH, gl)
     gpuCompute.setDataType(textureType)
 
-    // Initialize heightmap with visible initial waves
+    // Initialize heightmap with some noise for initial ripples
     const heightmap0 = gpuCompute.createTexture()
     const data = heightmap0.image.data as Float32Array
+
     for (let i = 0; i < data.length; i += 4) {
       const x = (i / 4) % WIDTH
       const y = Math.floor((i / 4) / WIDTH)
-      const ux = x / WIDTH
-      const uy = y / WIDTH
-      // Create initial concentric ripples from center
-      const dist = Math.sqrt((ux - 0.5) ** 2 + (uy - 0.5) ** 2)
-      const wave = Math.sin(dist * 20) * Math.exp(-dist * 3) * 0.1
-      data[i] = wave + (Math.random() - 0.5) * 0.01 // height
-      data[i + 1] = 0 // velocity
+
+      // Create initial wave pattern
+      const nx = x / WIDTH - 0.5
+      const ny = y / WIDTH - 0.5
+      const dist = Math.sqrt(nx * nx + ny * ny)
+
+      // Concentric ripples from center
+      const ripple = Math.sin(dist * 30) * Math.exp(-dist * 4) * 15
+      // Add some random noise
+      const noise = (Math.random() - 0.5) * 2
+
+      data[i] = ripple + noise     // current height
+      data[i + 1] = ripple + noise // previous height (same initially)
       data[i + 2] = 0
       data[i + 3] = 1
     }
@@ -251,17 +223,15 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
     const heightmapVar = gpuCompute.addVariable('heightmap', heightmapShader, heightmap0)
     gpuCompute.setVariableDependencies(heightmapVar, [heightmapVar])
 
-    // Set uniforms - tuned for smooth, visible waves
+    // Set uniforms
+    heightmapVar.material.uniforms.uMousePos = { value: new THREE.Vector2(-1000, -1000) }
+    heightmapVar.material.uniforms.uMouseSize = { value: 40.0 }
+    heightmapVar.material.uniforms.uViscosity = { value: 0.98 }
+    heightmapVar.material.uniforms.uDropStrength = { value: 0.0 }
     heightmapVar.material.uniforms.uTilt = { value: new THREE.Vector2(0, 0) }
-    heightmapVar.material.uniforms.uTiltVelocity = { value: new THREE.Vector2(0, 0) }
-    heightmapVar.material.uniforms.uDamping = { value: 0.985 } // More damping for smoother waves
-    heightmapVar.material.uniforms.uWaveSpeed = { value: 0.3 } // Slower propagation
-    heightmapVar.material.uniforms.uTime = { value: 0 }
-    heightmapVar.material.uniforms.uDropPos = { value: new THREE.Vector2(-1, -1) }
-    heightmapVar.material.uniforms.uDropStrength = { value: 0 }
 
     const error = gpuCompute.init()
-    if (error) {
+    if (error !== null) {
       console.error('GPGPU error:', error)
       return
     }
@@ -271,7 +241,9 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
 
     onReady?.()
 
-    return () => gpuCompute.dispose()
+    return () => {
+      gpuCompute.dispose()
+    }
   }, [gl, onReady])
 
   // Animation loop
@@ -282,48 +254,39 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
 
     if (!gpuCompute || !heightmapVar) return
 
-    // Auto-animate tilt for desktop testing when no device tilt input
+    // Update tilt
     const hasDeviceTilt = Math.abs(tilt.x) > 0.01 || Math.abs(tilt.y) > 0.01
 
-    let effectiveTilt = { ...tilt }
-    if (!hasDeviceTilt) {
-      // Gentle oscillating tilt to create smooth waves
-      autoTiltRef.current.x = Math.sin(time * 0.5) * 0.15 + Math.sin(time * 0.8) * 0.08
-      autoTiltRef.current.y = Math.cos(time * 0.4) * 0.12 + Math.cos(time * 0.7) * 0.06
-      effectiveTilt = autoTiltRef.current
+    if (hasDeviceTilt) {
+      heightmapVar.material.uniforms.uTilt.value.set(tilt.x, tilt.y)
+    } else {
+      // Auto-animate for desktop - gentle sloshing
+      const autoTiltX = Math.sin(time * 0.4) * 0.3 + Math.sin(time * 0.7) * 0.15
+      const autoTiltY = Math.cos(time * 0.35) * 0.25 + Math.cos(time * 0.6) * 0.1
+      heightmapVar.material.uniforms.uTilt.value.set(autoTiltX, autoTiltY)
     }
 
-    // Calculate tilt velocity (for impulse generation)
-    const tiltVelocity = {
-      x: effectiveTilt.x - prevTiltRef.current.x,
-      y: effectiveTilt.y - prevTiltRef.current.y,
-    }
-    prevTiltRef.current = { ...effectiveTilt }
+    // Periodic drops for visual interest
+    const dropInterval = 2.0
+    if (time - lastDropRef.current > dropInterval) {
+      lastDropRef.current = time
 
-    // Update simulation uniforms
-    heightmapVar.material.uniforms.uTilt.value.set(effectiveTilt.x, effectiveTilt.y)
-    heightmapVar.material.uniforms.uTiltVelocity.value.set(
-      tiltVelocity.x * 15,
-      tiltVelocity.y * 15
-    )
-    heightmapVar.material.uniforms.uTime.value = time
+      // Random position for drop
+      const dropX = (Math.random() - 0.5) * BOUNDS * 0.7
+      const dropY = (Math.random() - 0.5) * BOUNDS * 0.7
 
-    // Periodic rain drops for visual interest
-    const dropInterval = 1.5 // seconds between drops
-    if (time - lastDropTimeRef.current > dropInterval) {
-      lastDropTimeRef.current = time
-      heightmapVar.material.uniforms.uDropPos.value.set(
-        0.15 + Math.random() * 0.7,
-        0.15 + Math.random() * 0.7
-      )
-      heightmapVar.material.uniforms.uDropStrength.value = 1.0 + Math.random() * 0.5
-    } else if (time - lastDropTimeRef.current > 0.15) {
-      // Reset drop after a short time
+      heightmapVar.material.uniforms.uMousePos.value.set(dropX, dropY)
+      heightmapVar.material.uniforms.uDropStrength.value = 3.0 + Math.random() * 2.0
+      heightmapVar.material.uniforms.uMouseSize.value = 30 + Math.random() * 30
+    } else if (time - lastDropRef.current > 0.1) {
+      // Reset drop
       heightmapVar.material.uniforms.uDropStrength.value = 0
     }
 
-    // Run simulation
-    gpuCompute.compute()
+    // Run simulation (multiple steps for stability)
+    for (let i = 0; i < 2; i++) {
+      gpuCompute.compute()
+    }
 
     // Update water material
     if (materialRef.current) {
@@ -334,11 +297,11 @@ export default function WaterSurface({ tilt, onReady }: WaterSurfaceProps) {
   })
 
   // Size to fill viewport
-  const size = Math.max(viewport.width, viewport.height) * 1.2
+  const size = Math.max(viewport.width, viewport.height) * 1.5
 
   return (
     <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[size, size, MESH_RES, MESH_RES]} />
+      <planeGeometry args={[size, size, WIDTH - 1, WIDTH - 1]} />
       <shaderMaterial
         ref={materialRef}
         vertexShader={waterVertexShader}

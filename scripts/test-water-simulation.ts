@@ -39,7 +39,7 @@ async function testWaterSimulation() {
   try {
     // Load the water page
     console.log('1. Loading water simulation page...')
-    await page.goto('http://localhost:5174/claude-playground/water/')
+    await page.goto('http://localhost:5173/claude-playground/water/')
     await page.waitForLoadState('networkidle')
     console.log('   ✅ Page loaded')
 
