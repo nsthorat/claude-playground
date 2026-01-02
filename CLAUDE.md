@@ -4,39 +4,113 @@ A collection of mini apps and experiments, built with React, Vite, and Tailwind 
 
 ## Project Structure
 
+This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point for proper social sharing previews. Apps are **auto-discovered** from `app.config.tsx` files.
+
 ```
-src/
-├── components/
-│   └── ui/
-│       └── magic-card.tsx      # Reusable card with spotlight hover effect
-├── lib/
-│   └── utils.ts                # Utility functions (cn for classnames)
-├── pages/
-│   ├── Home.tsx                # Bento grid home page
-│   └── sensors/
-│       └── index.tsx           # Sensor diagnostics mini-app
-├── index.css                   # Global styles + Tailwind theme
-└── main.tsx                    # Router setup
+/
+├── index.html                  # Home page entry
+├── sensors/
+│   └── index.html              # Sensors app entry (with unique OG meta tags)
+├── audio/
+│   └── index.html              # Audio visualizer entry
+├── ribeye/
+│   └── index.html              # Ribeye recipe entry
+├── src/
+│   ├── apps/
+│   │   ├── sensors/main.tsx    # Sensors app React entry
+│   │   ├── audio/main.tsx      # Audio app React entry
+│   │   └── ribeye/main.tsx     # Ribeye app React entry
+│   ├── components/
+│   │   └── ui/
+│   │       └── magic-card.tsx  # Reusable card with spotlight hover effect
+│   ├── lib/
+│   │   └── utils.ts            # Utility functions (cn for classnames)
+│   ├── pages/
+│   │   ├── Home.tsx            # Bento grid home page (auto-discovers apps)
+│   │   ├── sensors/
+│   │   │   ├── index.tsx       # Sensor diagnostics component
+│   │   │   └── app.config.tsx  # App metadata for home page listing
+│   │   ├── audio/
+│   │   │   ├── index.tsx       # Audio visualizer component
+│   │   │   └── app.config.tsx  # App metadata for home page listing
+│   │   └── ribeye/
+│   │       ├── index.tsx       # Ribeye recipe component
+│   │       └── app.config.tsx  # App metadata for home page listing
+│   ├── index.css               # Global styles + Tailwind theme
+│   └── main.tsx                # Home page React entry
+├── vite.config.js              # MPA build configuration
+└── docs/                       # Build output for GitHub Pages
 ```
 
 ## How to Create a New Mini-App
 
-### 1. Create the page component
+### 1. Create the HTML entry point
 
-Create a new folder under `src/pages/` with an `index.tsx`:
+Create a new folder at the root with an `index.html`:
+
+```html
+<!-- my-app/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/claude-playground/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <!-- Unique meta tags for this app -->
+    <title>My App | Nikhil's Apps</title>
+    <meta name="description" content="Description of my app." />
+    <meta property="og:title" content="My App" />
+    <meta property="og:description" content="Description of my app." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://nsthorat.github.io/claude-playground/my-app/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/apps/my-app/main.tsx"></script>
+  </body>
+</html>
+```
+
+### 2. Create the React entry point
+
+Create `src/apps/my-app/main.tsx`:
 
 ```tsx
-// src/pages/my-app/index.tsx
-import { Link } from 'react-router-dom'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import '../../index.css'
+import MyApp from '../../pages/my-app'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <MyApp />
+  </StrictMode>,
+)
+```
+
+### 3. Create the page component
+
+Create `src/pages/my-app/index.tsx`:
+
+```tsx
 import { ArrowLeft } from 'lucide-react'
+
+const BASE_PATH = '/claude-playground'
 
 export default function MyApp() {
   return (
     <div className="p-4 max-w-xl mx-auto">
-      <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-accent-cyan mb-4">
+      <a href={`${BASE_PATH}/`} className="inline-flex items-center gap-2 text-text-secondary hover:text-accent-cyan mb-4">
         <ArrowLeft className="w-4 h-4" />
         Back to Home
-      </Link>
+      </a>
 
       <h1 className="text-3xl font-bold bg-gradient-to-r from-accent-cyan to-accent-purple bg-clip-text text-transparent">
         My App Title
@@ -48,32 +122,40 @@ export default function MyApp() {
 }
 ```
 
-### 2. Add the route
+### 4. Create the app config (auto-discovery)
 
-Update `src/main.tsx`:
-
-```tsx
-import MyApp from './pages/my-app'
-
-// In the Routes:
-<Route path="/my-app" element={<MyApp />} />
-```
-
-### 3. Add to home page grid
-
-Update `src/pages/Home.tsx` - add to the `miniApps` array:
+Create `src/pages/my-app/app.config.tsx` - this is how the home page discovers your app:
 
 ```tsx
-{
+import { SomeIcon } from 'lucide-react'
+
+export const appConfig = {
   id: 'my-app',
   title: 'My App',
   description: 'Description of what this app does.',
   icon: <SomeIcon className="w-6 h-6" />,
-  path: '/my-app',
-  status: 'available',  // or 'coming-soon'
+  path: '/my-app/',
+  status: 'available' as const,  // or 'coming-soon'
   gradient: 'from-accent-cyan/20 to-accent-purple/20',
-  size: 'small',  // or 'large' for featured apps
+  size: 'small' as const,  // or 'large' for featured apps
+  order: 10,  // Lower numbers appear first
 }
+```
+
+The home page uses `import.meta.glob` to automatically discover all `app.config.tsx` files and display them in the bento grid, sorted by `order`.
+
+### 5. Add to Vite config
+
+Update `vite.config.js` to include the new entry:
+
+```js
+rollupOptions: {
+  input: {
+    main: resolve(__dirname, 'index.html'),
+    sensors: resolve(__dirname, 'sensors/index.html'),
+    'my-app': resolve(__dirname, 'my-app/index.html'),  // Add this
+  },
+},
 ```
 
 ## Theme Colors
@@ -98,6 +180,8 @@ Use with Tailwind: `bg-bg-card`, `text-accent-cyan`, etc.
 
 - **Space Grotesk** - Display font for headings
 - **JetBrains Mono** - Monospace for code/data
+- **Playfair Display** - Serif for special styling (ribeye)
+- **Libre Baskerville** - Serif for body text (ribeye)
 
 ## Components
 
@@ -142,9 +226,10 @@ GitHub Pages serves from the `docs/` folder on the `main` branch.
 
 URL: https://nsthorat.github.io/claude-playground/
 
-## Routing
+## Architecture Notes
 
-Uses HashRouter for GitHub Pages compatibility:
-- Home: `/#/`
-- Sensors: `/#/sensors`
-- New app: `/#/my-app`
+- **MPA (Multi-Page App)**: Each mini-app has its own `index.html` for unique social sharing meta tags (OG tags)
+- **Auto-Discovery**: Home page uses `import.meta.glob('./*/app.config.tsx')` to find all apps
+- **No React Router**: Navigation uses regular `<a>` tags with full page loads
+- **Base Path**: All links use `/claude-playground/` prefix for GitHub Pages
+- **Vite MPA Build**: Uses `rollupOptions.input` to build multiple entry points

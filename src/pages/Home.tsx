@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
 import { MagicCard } from '@/components/ui/magic-card'
-import { Smartphone, Palette, Music, Clock, FileText, Gamepad2, ChefHat } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const BASE_PATH = '/claude-playground'
 
 interface MiniApp {
   id: string
@@ -12,80 +12,19 @@ interface MiniApp {
   status: 'available' | 'coming-soon'
   gradient: string
   size: 'large' | 'medium' | 'small'
+  order?: number
 }
 
-const miniApps: MiniApp[] = [
-  {
-    id: 'sensors',
-    title: 'Sensor Diagnostics',
-    description: 'Test iOS web sensor APIs including motion, orientation, geolocation, and camera.',
-    icon: <Smartphone className="w-8 h-8" />,
-    path: '/sensors',
-    status: 'available',
-    gradient: 'from-accent-cyan/20 to-accent-purple/20',
-    size: 'large',
-  },
-  {
-    id: 'colors',
-    title: 'Color Picker',
-    description: 'EyeDropper API demo',
-    icon: <Palette className="w-6 h-6" />,
-    path: '/colors',
-    status: 'coming-soon',
-    gradient: 'from-accent-green/20 to-accent-cyan/20',
-    size: 'small',
-  },
-  {
-    id: 'audio',
-    title: 'Audio Visualizer',
-    description: '3D audio visualizations with Galaxy & DNA modes',
-    icon: <Music className="w-6 h-6" />,
-    path: '/audio',
-    status: 'available',
-    gradient: 'from-accent-purple/20 to-accent-red/20',
-    size: 'small',
-  },
-  {
-    id: 'ribeye',
-    title: 'Ribeye Dinner',
-    description: '70s cookbook-style cooking timer for the perfect steak dinner',
-    icon: <ChefHat className="w-6 h-6" />,
-    path: '/ribeye',
-    status: 'available',
-    gradient: 'from-orange-500/20 to-yellow-500/20',
-    size: 'small',
-  },
-  {
-    id: 'timer',
-    title: 'Timer',
-    description: 'Precision timing APIs',
-    icon: <Clock className="w-6 h-6" />,
-    path: '/timer',
-    status: 'coming-soon',
-    gradient: 'from-accent-yellow/20 to-accent-green/20',
-    size: 'small',
-  },
-  {
-    id: 'clipboard',
-    title: 'Clipboard',
-    description: 'Clipboard API demo',
-    icon: <FileText className="w-6 h-6" />,
-    path: '/clipboard',
-    status: 'coming-soon',
-    gradient: 'from-accent-cyan/20 to-accent-green/20',
-    size: 'small',
-  },
-  {
-    id: 'gamepad',
-    title: 'Gamepad',
-    description: 'Gamepad API tester',
-    icon: <Gamepad2 className="w-6 h-6" />,
-    path: '/gamepad',
-    status: 'coming-soon',
-    gradient: 'from-accent-red/20 to-accent-yellow/20',
-    size: 'small',
-  },
-]
+// Auto-discover apps from app.config.tsx files
+const appConfigModules = import.meta.glob<{ appConfig: MiniApp }>(
+  './*/app.config.tsx',
+  { eager: true }
+)
+
+// Extract and sort app configs
+const discoveredApps: MiniApp[] = Object.values(appConfigModules)
+  .map(module => module.appConfig)
+  .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
 
 function AppCard({ app, index }: { app: MiniApp; index: number }) {
   const isAvailable = app.status === 'available'
@@ -148,7 +87,7 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
   )
 
   if (isAvailable) {
-    return <Link to={app.path} className="contents">{content}</Link>
+    return <a href={`${BASE_PATH}${app.path}`} className="contents">{content}</a>
   }
 
   return content
@@ -170,7 +109,7 @@ export default function Home() {
 
         {/* Bento Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {miniApps.map((app, index) => (
+          {discoveredApps.map((app, index) => (
             <AppCard key={app.id} app={app} index={index} />
           ))}
         </div>

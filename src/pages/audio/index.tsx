@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowLeft, Mic, MicOff, Sparkles, Dna } from 'lucide-react'
+
+const BASE_PATH = '/claude-playground'
 import * as THREE from 'three'
 import { EffectComposer, RenderPass, EffectPass, BloomEffect, ChromaticAberrationEffect } from 'postprocessing'
 import { cn } from '@/lib/utils'
@@ -837,12 +838,12 @@ export default function AudioVisualizer() {
     <div className="min-h-screen flex flex-col bg-black">
       {/* Minimal floating controls */}
       <div className="absolute top-4 left-4 z-20">
-        <Link
-          to="/"
+        <a
+          href={`${BASE_PATH}/`}
           className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all"
         >
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </a>
       </div>
 
       {/* Mode toggle - tap anywhere on top right */}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, Pause, RotateCcw, Check } from 'lucide-react'
+
+const BASE_PATH = '/claude-playground'
 import { cn } from '@/lib/utils'
 
 interface TimelineStep {
@@ -319,14 +320,14 @@ export default function RibeyeRecipe() {
         }}
       >
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <Link
-            to="/"
+          <a
+            href={`${BASE_PATH}/`}
             className="inline-flex items-center gap-2 mb-3 text-sm font-medium transition-colors"
             style={{ color: colors.brown }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Apps
-          </Link>
+          </a>
 
           {/* Title */}
           <div className="text-center mb-4">
