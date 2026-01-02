@@ -34,12 +34,6 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Install Playwright browsers
-        run: bunx playwright install chromium
-
-      - name: Generate OG images
-        run: bun run generate-og
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
