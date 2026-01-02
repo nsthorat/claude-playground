@@ -13,13 +13,17 @@ This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point
 │   └── index.html              # Sensors app entry (with unique OG meta tags)
 ├── audio/
 │   └── index.html              # Audio visualizer entry
-├── ribeye/
-│   └── index.html              # Ribeye recipe entry
+├── recipes/
+│   ├── index.html              # Recipes listing page entry
+│   └── ribeye/
+│       └── index.html          # Ribeye recipe entry (nested)
 ├── src/
 │   ├── apps/
 │   │   ├── sensors/main.tsx    # Sensors app React entry
 │   │   ├── audio/main.tsx      # Audio app React entry
-│   │   └── ribeye/main.tsx     # Ribeye app React entry
+│   │   └── recipes/
+│   │       ├── main.tsx        # Recipes listing React entry
+│   │       └── ribeye/main.tsx # Ribeye recipe React entry
 │   ├── components/
 │   │   └── ui/
 │   │       └── magic-card.tsx  # Reusable card with spotlight hover effect
@@ -33,13 +37,21 @@ This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point
 │   │   ├── audio/
 │   │   │   ├── index.tsx       # Audio visualizer component
 │   │   │   └── app.config.tsx  # App metadata for home page listing
-│   │   └── ribeye/
-│   │       ├── index.tsx       # Ribeye recipe component
-│   │       └── app.config.tsx  # App metadata for home page listing
+│   │   └── recipes/
+│   │       ├── index.tsx       # Recipes listing component
+│   │       ├── app.config.tsx  # App metadata for home page listing
+│   │       └── ribeye/
+│   │           ├── index.tsx       # Ribeye recipe component
+│   │           └── recipe.config.tsx # Recipe metadata for recipes listing
 │   ├── index.css               # Global styles + Tailwind theme
 │   └── main.tsx                # Home page React entry
-├── vite.config.js              # MPA build configuration
-└── docs/                       # Build output for GitHub Pages
+├── public/
+│   ├── og-home.png             # Home page OG image
+│   ├── sensors/og-image.png    # Sensors OG image
+│   └── recipes/
+│       ├── og-image.png        # Recipes listing OG image
+│       └── ribeye/og-image.png # Ribeye recipe OG image (nested)
+└── vite.config.js              # MPA build configuration
 ```
 
 ## How to Create a New Mini-App
@@ -156,6 +168,94 @@ rollupOptions: {
     'my-app': resolve(__dirname, 'my-app/index.html'),  // Add this
   },
 },
+```
+
+## How to Add a New Recipe
+
+The Recipes mini-app (`/recipes/`) uses auto-discovery to find individual recipes. Each recipe is a nested page with its own `recipe.config.tsx`.
+
+### 1. Create HTML entry point
+
+Create `recipes/my-recipe/index.html`:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/claude-playground/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>My Recipe | Recipes | Nikhil's Apps</title>
+    <meta name="description" content="Description of recipe." />
+    <meta property="og:title" content="My Recipe" />
+    <meta property="og:image" content="https://nikubaba.com/claude-playground/recipes/my-recipe/og-image.png" />
+    <!-- ... other meta tags -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/apps/recipes/my-recipe/main.tsx"></script>
+  </body>
+</html>
+```
+
+### 2. Create React entry point
+
+Create `src/apps/recipes/my-recipe/main.tsx`:
+
+```tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import '../../../index.css'
+import MyRecipe from '../../../pages/recipes/my-recipe'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <MyRecipe />
+  </StrictMode>,
+)
+```
+
+### 3. Create the recipe component
+
+Create `src/pages/recipes/my-recipe/index.tsx` with your recipe content. Use `Back to Recipes` link pointing to `${BASE_PATH}/recipes/`.
+
+### 4. Create the recipe config (auto-discovery)
+
+Create `src/pages/recipes/my-recipe/recipe.config.tsx`:
+
+```tsx
+import { SomeIcon } from 'lucide-react'
+
+export const recipeConfig = {
+  id: 'my-recipe',
+  title: 'My Recipe',
+  description: 'Short description of the recipe.',
+  icon: <SomeIcon className="w-5 h-5" />,
+  path: '/recipes/my-recipe/',
+  time: '~30 min',  // Cooking time shown on card
+  gradient: 'from-orange-500/20 to-yellow-500/20',
+  order: 2,
+}
+```
+
+The Recipes listing page uses `import.meta.glob('./*/recipe.config.tsx')` to discover all recipes.
+
+### 5. Add to Vite config
+
+```js
+rollupOptions: {
+  input: {
+    // ... existing entries
+    'recipes-my-recipe': resolve(__dirname, 'recipes/my-recipe/index.html'),
+  },
+},
+```
+
+### 6. Generate OG image
+
+```bash
+bun run build && bun run generate-og
+git add public/recipes/my-recipe/og-image.png
 ```
 
 ## Theme Colors
@@ -288,6 +388,7 @@ git add public/            # Commit the updated images
 Images are saved to:
 - `public/og-home.png` - Homepage
 - `public/{app}/og-image.png` - Each app (e.g., `public/sensors/og-image.png`)
+- `public/{app}/{sub}/og-image.png` - Nested pages (e.g., `public/recipes/ribeye/og-image.png`)
 
 ## Architecture Notes
 
