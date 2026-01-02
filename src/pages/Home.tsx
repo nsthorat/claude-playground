@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { MagicCard } from '@/components/ui/magic-card'
 import { cn } from '@/lib/utils'
+import { Menu, X } from 'lucide-react'
 
 const BASE_PATH = '/claude-playground'
 
@@ -107,9 +109,108 @@ function AppCard({ app, index }: { app: MiniApp; index: number }) {
   return content
 }
 
+function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          'fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 sm:hidden',
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={onClose}
+      />
+
+      {/* Sliding Tray */}
+      <div
+        className={cn(
+          'fixed top-0 left-0 h-full w-72 bg-bg-card border-r border-white/10 z-50 transform transition-transform duration-300 ease-out sm:hidden',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <h2 className="text-lg font-semibold text-text-primary">Apps</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <X className="w-5 h-5 text-text-secondary" />
+          </button>
+        </div>
+
+        {/* App List */}
+        <nav className="p-2 overflow-y-auto max-h-[calc(100vh-64px)]">
+          {discoveredApps.map((app) => {
+            const isAvailable = app.status === 'available'
+
+            if (!isAvailable) {
+              return (
+                <div
+                  key={app.id}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg opacity-50"
+                >
+                  <div
+                    className={cn(
+                      'w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br',
+                      app.gradient,
+                      'text-text-primary'
+                    )}
+                  >
+                    {app.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-text-primary truncate">{app.title}</p>
+                    <p className="text-xs text-text-muted">Coming Soon</p>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <a
+                key={app.id}
+                href={`${BASE_PATH}${app.path}`}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition-colors"
+              >
+                <div
+                  className={cn(
+                    'w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br',
+                    app.gradient,
+                    'text-text-primary'
+                  )}
+                >
+                  {app.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary truncate">{app.title}</p>
+                  <p className="text-xs text-text-secondary truncate">{app.description}</p>
+                </div>
+              </a>
+            )
+          })}
+        </nav>
+      </div>
+    </>
+  )
+}
+
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
     <div className="min-h-screen p-4 md:p-8">
+      {/* Mobile Menu Button - top left, only on mobile */}
+      <button
+        onClick={() => setMenuOpen(true)}
+        className="fixed top-4 left-4 z-30 w-10 h-10 flex items-center justify-center rounded-lg bg-bg-card/80 backdrop-blur-sm border border-white/10 sm:hidden"
+      >
+        <Menu className="w-5 h-5 text-text-primary" />
+      </button>
+
+      {/* Mobile Menu Tray */}
+      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <header className="text-center mb-12" style={{ animation: 'fadeInUp 0.6s ease-out' }}>
