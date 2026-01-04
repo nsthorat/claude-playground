@@ -373,6 +373,62 @@ test()
 
 Run with: `bun scripts/test-my-app.ts` (dev server must be running)
 
+### Testing Apps with External Resources (Mapbox, etc.)
+
+In some environments (like Claude Code's remote sandbox), Playwright's Chromium browser cannot directly access external URLs due to proxy/DNS configuration. The solution is to **intercept requests and proxy them through Node's fetch**, which correctly uses the system proxy.
+
+```ts
+import { chromium } from 'playwright'
+
+async function test() {
+  const browser = await chromium.launch({ headless: true })
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } })
+
+  // IMPORTANT: Intercept external requests and fetch them server-side
+  // This works around Chromium not using the system proxy
+  await page.route('**/*', async (route, request) => {
+    const url = request.url()
+
+    // Let localhost requests through directly
+    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      return route.continue()
+    }
+
+    // For external URLs (Mapbox, Google Fonts, etc.), fetch server-side
+    try {
+      const response = await fetch(url, {
+        method: request.method(),
+        headers: request.headers(),
+      })
+      const body = Buffer.from(await response.arrayBuffer())
+      const headers: Record<string, string> = {}
+      response.headers.forEach((v, k) => headers[k] = v)
+
+      await route.fulfill({ status: response.status, headers, body })
+    } catch (e) {
+      route.abort()
+    }
+  })
+
+  // Now external resources (map tiles, fonts, APIs) will load correctly
+  await page.goto('http://localhost:5173/claude-playground/istanbul/#geography')
+  await page.waitForTimeout(5000)  // Wait for map tiles to load
+  await page.screenshot({ path: '/tmp/map-test.png' })
+
+  await browser.close()
+}
+
+test()
+```
+
+**Why this works:** Node's `fetch()` respects the `HTTP_PROXY`/`HTTPS_PROXY` environment variables, while Playwright's Chromium browser does not automatically pick them up. By intercepting all external requests and fulfilling them with server-side fetched data, we bypass this limitation.
+
+**When to use this pattern:**
+- Apps using Mapbox, Google Maps, or other map services
+- Apps loading external fonts (Google Fonts)
+- Apps making API calls to external services
+- Any time you see `ERR_NAME_NOT_RESOLVED` or `ERR_TUNNEL_CONNECTION_FAILED` in Playwright
+
 ## OG Image Generation
 
 OG images are **checked into git** in the `public/` folder. They get copied to the build output automatically.
