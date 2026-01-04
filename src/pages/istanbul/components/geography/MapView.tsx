@@ -1,9 +1,10 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import Map, { Source, Layer, Marker, NavigationControl } from 'react-map-gl/mapbox'
 import type { MapRef } from 'react-map-gl/mapbox'
-import { Star, AlertCircle } from 'lucide-react'
+import { Star, AlertCircle, MapPin } from 'lucide-react'
 import { regions, regionsToGeoJSON, ferryRoutes, bosphorusLine, goldenHorn } from '../../data/regions'
 import type { Region } from '../../data/regions'
+import type { POI } from './hooks'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
@@ -21,7 +22,7 @@ const INITIAL_VIEW = {
 }
 
 interface MapViewProps {
-  mode: 'explore' | 'time'
+  mode: 'explore' | 'time' | 'here'
   selectedRegion: string | null
   onRegionClick: (regionId: string | null) => void
   timeOfDay: number
@@ -30,16 +31,23 @@ interface MapViewProps {
     ferryRoutes: boolean
     waterLabels: boolean
   }
+  userLocation?: { lat: number; lon: number } | null
+  selectedPOI?: POI | null
 }
 
-export default function MapView({
+const MapView = forwardRef<MapRef, MapViewProps>(function MapView({
   mode,
   selectedRegion,
   onRegionClick,
   timeOfDay,
   visibleLayers,
-}: MapViewProps) {
+  userLocation,
+  selectedPOI,
+}, ref) {
   const mapRef = useRef<MapRef>(null)
+
+  // Expose mapRef to parent via forwardRef
+  useImperativeHandle(ref, () => mapRef.current!, [mapRef.current])
   const [mapLoaded, setMapLoaded] = useState(false)
 
   // If no token, show setup message
@@ -267,17 +275,42 @@ export default function MapView({
         </Source>
       )}
 
-      {/* Galata Marker (Home Base) */}
-      <Marker longitude={28.9744} latitude={41.0256} anchor="center">
-        <div className="relative group">
-          <div className="w-8 h-8 bg-accent-cyan rounded-full flex items-center justify-center shadow-lg shadow-accent-cyan/30 animate-pulse">
-            <Star className="w-4 h-4 text-black fill-black" />
+      {/* Galata Marker (Home Base) - hide in here mode */}
+      {mode !== 'here' && (
+        <Marker longitude={28.9744} latitude={41.0256} anchor="center">
+          <div className="relative group">
+            <div className="w-8 h-8 bg-accent-cyan rounded-full flex items-center justify-center shadow-lg shadow-accent-cyan/30 animate-pulse">
+              <Star className="w-4 h-4 text-black fill-black" />
+            </div>
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+              Your Hotel
+            </div>
           </div>
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            Your Hotel
+        </Marker>
+      )}
+
+      {/* User Location Marker (Here Mode) */}
+      {mode === 'here' && userLocation && (
+        <Marker longitude={userLocation.lon} latitude={userLocation.lat} anchor="center">
+          <div className="relative">
+            {/* Accuracy ring */}
+            <div className="absolute inset-0 w-16 h-16 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 bg-blue-500/20 rounded-full animate-ping" />
+            {/* Blue dot */}
+            <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg shadow-blue-500/50" />
           </div>
-        </div>
-      </Marker>
+        </Marker>
+      )}
+
+      {/* Selected POI Marker (Here Mode) */}
+      {mode === 'here' && selectedPOI && (
+        <Marker longitude={selectedPOI.lon} latitude={selectedPOI.lat} anchor="bottom">
+          <div className="relative animate-bounce">
+            <MapPin className="w-8 h-8 text-accent-purple drop-shadow-lg" fill="currentColor" />
+          </div>
+        </Marker>
+      )}
     </Map>
   )
-}
+})
+
+export default MapView
