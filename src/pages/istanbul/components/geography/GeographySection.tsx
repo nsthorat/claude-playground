@@ -199,7 +199,7 @@ export default function GeographySection() {
       {/* Instructions (Explore Mode) */}
       {mode === 'explore' && !selectedRegion && (
         <div className="text-center py-4 text-text-muted text-sm">
-          Tap a neighborhood to learn more • Your hotel is marked with ★
+          Tap a neighborhood to learn more • Galata Tower marked with ★
         </div>
       )}
 

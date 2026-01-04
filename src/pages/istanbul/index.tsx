@@ -665,15 +665,15 @@ const historicalSites = [
   },
 ]
 
-// The girlfriend's itinerary
+// Sample Istanbul itinerary
 const itinerary: DayPlan[] = [
   {
     day: 1,
-    date: 'Friday, Jan 3',
+    date: 'Day 1',
     title: 'Arrival & Gentle Start',
     theme: 'Settle in, easy Galata exploration',
     activities: [
-      { time: '1:00pm', title: 'Land from Boston', description: 'Welcome to Istanbul!', icon: <Navigation className="w-4 h-4" /> },
+      { time: '1:00pm', title: 'Arrive in Istanbul', description: 'Welcome to Istanbul!', icon: <Navigation className="w-4 h-4" /> },
       { time: '~3:00pm', title: 'Arrive at Galata hotel', description: 'Unpack and settle in', icon: <Building2 className="w-4 h-4" /> },
       { time: 'Late afternoon', title: 'Easy Galata Exploration', description: 'Walk around the immediate area to orient everyone. Visit Camondo Stairs for quick photos. Peek at Galata Tower from outside.', tips: ['Take it easy - jet lag is real', 'Maybe short waterfront walk in Karaköy if feeling good'], icon: <Compass className="w-4 h-4" /> },
       { time: '5:30-6:30pm', title: 'Early, relaxed dinner', description: 'Traditional pide or mantı (dumplings) - comfort food close to hotel.', tips: ['Keep it low-key, close to hotel', 'Watch sunset over Bosphorus from Galata'], icon: <Utensils className="w-4 h-4" /> },
@@ -682,7 +682,7 @@ const itinerary: DayPlan[] = [
   },
   {
     day: 2,
-    date: 'Saturday, Jan 4',
+    date: 'Day 2',
     title: 'Galata + Istiklal',
     theme: 'Coffee culture, views, and bohemian vibes',
     activities: [
@@ -697,7 +697,7 @@ const itinerary: DayPlan[] = [
   },
   {
     day: 3,
-    date: 'Sunday, Jan 5',
+    date: 'Day 3',
     title: 'Hagia Sophia + Sultanahmet',
     theme: 'THE history day - all the major sites',
     activities: [
@@ -711,20 +711,20 @@ const itinerary: DayPlan[] = [
   },
   {
     day: 4,
-    date: 'Monday, Jan 6',
+    date: 'Day 4',
     title: 'SPA DAY',
     theme: 'Relaxation and self-care',
     activities: [
       { time: 'Morning', title: 'Süleymaniye Mosque (optional)', description: 'If you didn\'t visit yesterday. Mimar Sinan masterpiece from 1557. Less crowded than tourist mosques.', tips: ['Beautiful courtyards', 'Everyone should do this one together', '1 hour visit'], icon: <Building2 className="w-4 h-4" /> },
       { time: 'Morning alt', title: 'Relaxed neighborhood time', description: 'Slow morning with coffee. Light walking around Galata at own pace.', icon: <Coffee className="w-4 h-4" /> },
       { time: '2:30-3:00pm', title: 'HAMMAM TIME', description: 'You three only - 90-minute experience. Steam room → full-body scrub (kese) → foam massage → tea.', tips: ['Top pick: Kılıç Ali Paşa Hamamı (Mimar Sinan designed!)', 'Closest: Ağa Hamamı (10-min walk)', 'Bring swimsuit and flip-flops', 'Tip 10-15% for attendant'], icon: <Waves className="w-4 h-4" /> },
-      { time: 'While at hammam', title: 'Dad can relax', description: 'Relax at hotel, read, enjoy cafe nearby. Or visit Turkish Hamam Culture Museum in Beyazıt (free, fascinating!).', icon: <Building2 className="w-4 h-4" /> },
+      { time: 'While at hammam', title: 'Free time option', description: 'Relax at hotel, read, enjoy cafe nearby. Or visit Turkish Hamam Culture Museum in Beyazıt (free, fascinating!).', icon: <Building2 className="w-4 h-4" /> },
       { time: 'Evening', title: 'Reconvene for dinner', description: 'You\'ll feel amazing post-hammam!', icon: <Utensils className="w-4 h-4" /> },
     ]
   },
   {
     day: 5,
-    date: 'Tuesday, Jan 7',
+    date: 'Day 5',
     title: 'Asian Side – Kadıköy',
     theme: 'Ferry across continents, local life',
     activities: [
@@ -738,7 +738,7 @@ const itinerary: DayPlan[] = [
   },
   {
     day: 6,
-    date: 'Wednesday, Jan 8',
+    date: 'Day 6 (Departure)',
     title: 'Departure Day',
     theme: 'Balat morning, then airport',
     activities: [
@@ -965,7 +965,7 @@ function ItinerarySection() {
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-text-primary mb-2">5-Day Itinerary</h2>
-        <p className="text-text-secondary">January 3-8 | Galata-based adventure</p>
+        <p className="text-text-secondary">A Galata-based adventure</p>
       </div>
 
       {/* Quick Jump */}
@@ -1068,7 +1068,7 @@ function ItinerarySection() {
       <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl p-4 border border-orange-500/20">
         <h3 className="font-bold text-text-primary mb-3 flex items-center gap-2">
           <Info className="w-5 h-5 text-orange-400" />
-          Tips for Dad (77, history buff)
+          Tips for Seniors & History Buffs
         </h3>
         <ul className="space-y-2 text-sm text-text-secondary">
           <li className="flex items-start gap-2">

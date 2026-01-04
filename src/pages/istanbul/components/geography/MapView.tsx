@@ -322,15 +322,15 @@ const MapView = forwardRef<MapRef, MapViewProps>(function MapView({
         </Marker>
       ))}
 
-      {/* Galata Marker (Home Base) - hide in here mode */}
+      {/* Galata Tower Marker (Home Base area) - hide in here mode */}
       {mode !== 'here' && (
-        <Marker longitude={28.9744} latitude={41.0256} anchor="center">
+        <Marker longitude={28.9741} latitude={41.0256} anchor="center">
           <div className="relative group">
             <div className="w-8 h-8 bg-accent-cyan rounded-full flex items-center justify-center shadow-lg shadow-accent-cyan/30 animate-pulse">
               <Star className="w-4 h-4 text-black fill-black" />
             </div>
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-              Your Hotel
+              Galata Tower
             </div>
           </div>
         </Marker>
