@@ -1,9 +1,11 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import Map, { Source, Layer, Marker, NavigationControl } from 'react-map-gl/mapbox'
 import type { MapRef } from 'react-map-gl/mapbox'
-import { Star, AlertCircle } from 'lucide-react'
+import { Star, AlertCircle, MapPin } from 'lucide-react'
 import { regions, regionsToGeoJSON, ferryRoutes, bosphorusLine, goldenHorn } from '../../data/regions'
+import { getWallsGeoJSON, historicalLandmarks } from '../../data/walls'
 import type { Region } from '../../data/regions'
+import type { POI } from './hooks'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
@@ -21,7 +23,7 @@ const INITIAL_VIEW = {
 }
 
 interface MapViewProps {
-  mode: 'explore' | 'time'
+  mode: 'explore' | 'time' | 'here' | 'tour'
   selectedRegion: string | null
   onRegionClick: (regionId: string | null) => void
   timeOfDay: number
@@ -29,17 +31,25 @@ interface MapViewProps {
     regions: boolean
     ferryRoutes: boolean
     waterLabels: boolean
+    walls: boolean
   }
+  userLocation?: { lat: number; lon: number } | null
+  selectedPOI?: POI | null
 }
 
-export default function MapView({
+const MapView = forwardRef<MapRef, MapViewProps>(function MapView({
   mode,
   selectedRegion,
   onRegionClick,
   timeOfDay,
   visibleLayers,
-}: MapViewProps) {
+  userLocation,
+  selectedPOI,
+}, ref) {
   const mapRef = useRef<MapRef>(null)
+
+  // Expose mapRef to parent via forwardRef
+  useImperativeHandle(ref, () => mapRef.current!, [mapRef.current])
   const [mapLoaded, setMapLoaded] = useState(false)
 
   // If no token, show setup message
@@ -267,17 +277,87 @@ export default function MapView({
         </Source>
       )}
 
-      {/* Galata Marker (Home Base) */}
-      <Marker longitude={28.9744} latitude={41.0256} anchor="center">
-        <div className="relative group">
-          <div className="w-8 h-8 bg-accent-cyan rounded-full flex items-center justify-center shadow-lg shadow-accent-cyan/30 animate-pulse">
-            <Star className="w-4 h-4 text-black fill-black" />
+      {/* Theodosian Walls */}
+      {visibleLayers.walls && (
+        <Source id="walls" type="geojson" data={getWallsGeoJSON()}>
+          <Layer
+            id="walls-line"
+            type="line"
+            paint={{
+              'line-color': '#aa66ff',
+              'line-width': 4,
+              'line-opacity': 0.8,
+            }}
+          />
+          <Layer
+            id="walls-glow"
+            type="line"
+            paint={{
+              'line-color': '#aa66ff',
+              'line-width': 12,
+              'line-opacity': 0.2,
+              'line-blur': 4,
+            }}
+          />
+        </Source>
+      )}
+
+      {/* Historical Landmarks */}
+      {visibleLayers.walls && historicalLandmarks.map((landmark) => (
+        <Marker
+          key={landmark.id}
+          longitude={landmark.coords[0]}
+          latitude={landmark.coords[1]}
+          anchor="center"
+        >
+          <div className="relative group cursor-pointer">
+            <div className="w-8 h-8 bg-accent-purple/80 rounded-full flex items-center justify-center shadow-lg shadow-accent-purple/30 border-2 border-white/30">
+              <span className="text-sm">{landmark.emoji}</span>
+            </div>
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 bg-black/90 px-3 py-2 rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+              <div className="font-semibold">{landmark.name}</div>
+              <div className="text-text-muted">Built {landmark.built} AD</div>
+            </div>
           </div>
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            Your Hotel
+        </Marker>
+      ))}
+
+      {/* Galata Marker (Home Base) - hide in here mode */}
+      {mode !== 'here' && (
+        <Marker longitude={28.9744} latitude={41.0256} anchor="center">
+          <div className="relative group">
+            <div className="w-8 h-8 bg-accent-cyan rounded-full flex items-center justify-center shadow-lg shadow-accent-cyan/30 animate-pulse">
+              <Star className="w-4 h-4 text-black fill-black" />
+            </div>
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+              Your Hotel
+            </div>
           </div>
-        </div>
-      </Marker>
+        </Marker>
+      )}
+
+      {/* User Location Marker (Here Mode) */}
+      {mode === 'here' && userLocation && (
+        <Marker longitude={userLocation.lon} latitude={userLocation.lat} anchor="center">
+          <div className="relative">
+            {/* Accuracy ring */}
+            <div className="absolute inset-0 w-16 h-16 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 bg-blue-500/20 rounded-full animate-ping" />
+            {/* Blue dot */}
+            <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg shadow-blue-500/50" />
+          </div>
+        </Marker>
+      )}
+
+      {/* Selected POI Marker (Here Mode) */}
+      {mode === 'here' && selectedPOI && (
+        <Marker longitude={selectedPOI.lon} latitude={selectedPOI.lat} anchor="bottom">
+          <div className="relative animate-bounce">
+            <MapPin className="w-8 h-8 text-accent-purple drop-shadow-lg" fill="currentColor" />
+          </div>
+        </Marker>
+      )}
     </Map>
   )
-}
+})
+
+export default MapView
