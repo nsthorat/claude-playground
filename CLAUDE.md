@@ -9,15 +9,19 @@ This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point
 ```
 /
 ├── index.html                  # Home page entry
-├── apps/                       # All mini-app HTML entry points
-│   ├── sensors/index.html
-│   ├── audio/index.html
-│   ├── fluid/index.html
-│   ├── istanbul/index.html
-│   ├── water/index.html
-│   └── recipes/
-│       ├── index.html          # Recipes listing
-│       └── ribeye/index.html   # Ribeye recipe (nested)
+├── sensors/
+│   └── index.html              # Sensors app entry (with unique OG meta tags)
+├── audio/
+│   └── index.html              # Audio visualizer entry
+├── fluid/
+│   └── index.html              # Fluid simulation entry
+├── istanbul/
+│   └── index.html              # Istanbul guide entry
+├── water/
+│   └── index.html              # Water simulation entry
+├── recipes/
+│   ├── index.html              # Recipes listing
+│   └── ribeye/index.html       # Ribeye recipe (nested)
 ├── src/
 │   ├── apps/                   # React entry points (main.tsx files)
 │   │   ├── sensors/main.tsx
@@ -46,12 +50,11 @@ This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point
 │   └── main.tsx
 ├── public/
 │   ├── og-home.png
-│   └── apps/                   # OG images for each app
-│       ├── sensors/og-image.png
-│       ├── audio/og-image.png
-│       └── recipes/
-│           ├── og-image.png
-│           └── ribeye/og-image.png
+│   ├── sensors/og-image.png
+│   ├── audio/og-image.png
+│   └── recipes/
+│       ├── og-image.png
+│       └── ribeye/og-image.png
 ├── plans/                      # Implementation plans (historical)
 └── vite.config.js
 ```
@@ -60,10 +63,10 @@ This is a Multi-Page App (MPA), where each mini-app has its own HTML entry point
 
 ### 1. Create the HTML entry point
 
-Create a new folder in `apps/` with an `index.html`:
+Create a new folder at the root with an `index.html`:
 
 ```html
-<!-- apps/my-app/index.html -->
+<!-- my-app/index.html -->
 <!doctype html>
 <html lang="en">
   <head>
@@ -77,8 +80,8 @@ Create a new folder in `apps/` with an `index.html`:
     <meta property="og:title" content="My App" />
     <meta property="og:description" content="Description of my app." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://nikubaba.com/claude-playground/apps/my-app/" />
-    <meta property="og:image" content="https://nikubaba.com/claude-playground/apps/my-app/og-image.png" />
+    <meta property="og:url" content="https://nikubaba.com/claude-playground/my-app/" />
+    <meta property="og:image" content="https://nikubaba.com/claude-playground/my-app/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <!-- Fonts -->
@@ -149,7 +152,7 @@ export const appConfig = {
   title: 'My App',
   description: 'Description of what this app does.',
   icon: <SomeIcon className="w-5 h-5" />,
-  path: '/apps/my-app/',
+  path: '/my-app/',
   status: 'available' as const,  // or 'coming-soon'
   gradient: 'from-accent-cyan/20 to-accent-purple/20',
   order: 10,  // Lower numbers appear first
@@ -166,19 +169,19 @@ Update `vite.config.js` to include the new entry:
 rollupOptions: {
   input: {
     main: resolve(__dirname, 'index.html'),
-    sensors: resolve(__dirname, 'apps/sensors/index.html'),
-    'my-app': resolve(__dirname, 'apps/my-app/index.html'),  // Add this
+    sensors: resolve(__dirname, 'sensors/index.html'),
+    'my-app': resolve(__dirname, 'my-app/index.html'),  // Add this
   },
 },
 ```
 
 ## How to Add a New Recipe
 
-The Recipes mini-app (`/apps/recipes/`) uses auto-discovery to find individual recipes. Each recipe is a nested page with its own `recipe.config.tsx`.
+The Recipes mini-app (`/recipes/`) uses auto-discovery to find individual recipes. Each recipe is a nested page with its own `recipe.config.tsx`.
 
 ### 1. Create HTML entry point
 
-Create `apps/recipes/my-recipe/index.html`:
+Create `recipes/my-recipe/index.html`:
 
 ```html
 <!doctype html>
@@ -190,7 +193,7 @@ Create `apps/recipes/my-recipe/index.html`:
     <title>My Recipe | Recipes | Nikhil's Apps</title>
     <meta name="description" content="Description of recipe." />
     <meta property="og:title" content="My Recipe" />
-    <meta property="og:image" content="https://nikubaba.com/claude-playground/apps/recipes/my-recipe/og-image.png" />
+    <meta property="og:image" content="https://nikubaba.com/claude-playground/recipes/my-recipe/og-image.png" />
     <!-- ... other meta tags -->
   </head>
   <body>
@@ -219,7 +222,7 @@ createRoot(document.getElementById('root')!).render(
 
 ### 3. Create the recipe component
 
-Create `src/pages/recipes/my-recipe/index.tsx` with your recipe content. Use `Back to Recipes` link pointing to `${BASE_PATH}/apps/recipes/`.
+Create `src/pages/recipes/my-recipe/index.tsx` with your recipe content. Use `Back to Recipes` link pointing to `${BASE_PATH}/recipes/`.
 
 ### 4. Create the recipe config (auto-discovery)
 
@@ -233,7 +236,7 @@ export const recipeConfig = {
   title: 'My Recipe',
   description: 'Short description of the recipe.',
   icon: <SomeIcon className="w-5 h-5" />,
-  path: '/apps/recipes/my-recipe/',
+  path: '/recipes/my-recipe/',
   time: '~30 min',  // Cooking time shown on card
   gradient: 'from-orange-500/20 to-yellow-500/20',
   order: 2,
@@ -248,7 +251,7 @@ The Recipes listing page uses `import.meta.glob('./*/recipe.config.tsx')` to dis
 rollupOptions: {
   input: {
     // ... existing entries
-    'recipes-my-recipe': resolve(__dirname, 'apps/recipes/my-recipe/index.html'),
+    'recipes-my-recipe': resolve(__dirname, 'recipes/my-recipe/index.html'),
   },
 },
 ```
@@ -257,7 +260,7 @@ rollupOptions: {
 
 ```bash
 bun run build && bun run generate-og
-git add public/apps/recipes/my-recipe/og-image.png
+git add public/recipes/my-recipe/og-image.png
 ```
 
 ## Theme Colors
@@ -470,8 +473,8 @@ git add public/            # Commit the updated images
 
 Images are saved to:
 - `public/og-home.png` - Homepage
-- `public/apps/{app}/og-image.png` - Each app (e.g., `public/apps/sensors/og-image.png`)
-- `public/apps/{app}/{sub}/og-image.png` - Nested pages (e.g., `public/apps/recipes/ribeye/og-image.png`)
+- `public/{app}/og-image.png` - Each app (e.g., `public/sensors/og-image.png`)
+- `public/{app}/{sub}/og-image.png` - Nested pages (e.g., `public/recipes/ribeye/og-image.png`)
 
 ## Architecture Notes
 
