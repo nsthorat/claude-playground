@@ -373,9 +373,11 @@ test()
 
 Run with: `bun scripts/test-my-app.ts` (dev server must be running)
 
-### Testing Apps with External Resources (Mapbox, etc.)
+### Testing Apps with External Resources (Mapbox, APIs, etc.)
 
 In some environments (like Claude Code's remote sandbox), Playwright's Chromium browser cannot directly access external URLs due to proxy/DNS configuration. The solution is to **intercept requests and proxy them through Node's fetch**, which correctly uses the system proxy.
+
+**IMPORTANT:** Target specific URL patterns instead of `**/*` to avoid timeout issues:
 
 ```ts
 import { chromium } from 'playwright'
@@ -384,35 +386,33 @@ async function test() {
   const browser = await chromium.launch({ headless: true })
   const page = await browser.newPage({ viewport: { width: 430, height: 932 } })
 
-  // IMPORTANT: Intercept external requests and fetch them server-side
-  // This works around Chromium not using the system proxy
-  await page.route('**/*', async (route, request) => {
-    const url = request.url()
-
-    // Let localhost requests through directly
-    if (url.includes('localhost') || url.includes('127.0.0.1')) {
-      return route.continue()
-    }
-
-    // For external URLs (Mapbox, Google Fonts, etc.), fetch server-side
-    try {
-      const response = await fetch(url, {
-        method: request.method(),
-        headers: request.headers(),
-      })
-      const body = Buffer.from(await response.arrayBuffer())
-      const headers: Record<string, string> = {}
-      response.headers.forEach((v, k) => headers[k] = v)
-
-      await route.fulfill({ status: response.status, headers, body })
-    } catch (e) {
-      route.abort()
-    }
+  // Route SPECIFIC external domains (not **/* which causes timeouts)
+  await page.route('https://api.mapbox.com/**', async route => {
+    const req = route.request()
+    const res = await fetch(req.url(), {
+      method: req.method(),
+      body: req.method() === 'POST' ? req.postData() : undefined,
+    })
+    route.fulfill({ status: res.status, body: await res.text() })
   })
 
-  // Now external resources (map tiles, fonts, APIs) will load correctly
+  await page.route('https://overpass-api.de/**', async route => {
+    const req = route.request()
+    const res = await fetch(req.url(), {
+      method: req.method(),
+      body: req.method() === 'POST' ? req.postData() : undefined,
+    })
+    route.fulfill({ status: res.status, body: await res.text() })
+  })
+
+  await page.route('https://en.wikipedia.org/**', async route => {
+    const res = await fetch(route.request().url())
+    route.fulfill({ status: res.status, body: await res.text() })
+  })
+
+  // Now external resources will load correctly
   await page.goto('http://localhost:5173/claude-playground/istanbul/#geography')
-  await page.waitForTimeout(5000)  // Wait for map tiles to load
+  await page.waitForTimeout(5000)
   await page.screenshot({ path: '/tmp/map-test.png' })
 
   await browser.close()
@@ -421,13 +421,38 @@ async function test() {
 test()
 ```
 
-**Why this works:** Node's `fetch()` respects the `HTTP_PROXY`/`HTTPS_PROXY` environment variables, while Playwright's Chromium browser does not automatically pick them up. By intercepting all external requests and fulfilling them with server-side fetched data, we bypass this limitation.
+**Why this works:** Node's `fetch()` respects the `HTTP_PROXY`/`HTTPS_PROXY` environment variables, while Playwright's Chromium browser does not automatically pick them up. By intercepting specific external requests and fulfilling them with server-side fetched data, we bypass this limitation.
 
 **When to use this pattern:**
 - Apps using Mapbox, Google Maps, or other map services
 - Apps loading external fonts (Google Fonts)
 - Apps making API calls to external services
 - Any time you see `ERR_NAME_NOT_RESOLVED` or `ERR_TUNNEL_CONNECTION_FAILED` in Playwright
+
+### Free CORS-Enabled APIs
+
+These APIs have `Access-Control-Allow-Origin: *` and work from any origin without API keys:
+
+| API | URL | Use Case |
+|-----|-----|----------|
+| **Overpass API** | `https://overpass-api.de/api/interpreter` | POIs from OpenStreetMap (restaurants, museums, etc.) |
+| **Wikipedia API** | `https://en.wikipedia.org/api/rest_v1/page/summary/{title}` | Rich descriptions, images, extracts |
+| **Nominatim** | `https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}` | Reverse geocoding (address from coords) |
+
+Example: Testing API calls from browser context:
+
+```ts
+// After setting up routes above...
+const result = await page.evaluate(async () => {
+  const query = `[out:json];node["amenity"="cafe"](around:500,41.0256,28.9744);out 5;`
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: 'data=' + encodeURIComponent(query)
+  })
+  return res.json()
+})
+console.log('Found', result.elements?.length, 'cafes!')
+```
 
 ## OG Image Generation
 
