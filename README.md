@@ -1,16 +1,41 @@
-# React + Vite
+# Nikhil's Apps
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A collection of mini apps and experiments, built with React, Vite, and Tailwind CSS.
 
-Currently, two official plugins are available:
+**Live site:** [nikubaba.com/claude-playground](https://nikubaba.com/claude-playground/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Apps
 
-## React Compiler
+- **Sensors** - Test iOS web sensor APIs (motion, orientation, geolocation, camera)
+- **Audio** - Audio visualizer with microphone input
+- **Water** - Interactive 3D water simulation
+- **Fluid** - Fluid dynamics simulation
+- **Istanbul** - Interactive guide to Istanbul with maps and historical data
+- **Recipes** - Collection of recipes (Ribeye, etc.)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick Start
 
-## Expanding the ESLint configuration
+```bash
+bun install
+bun run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Development
+
+See [CLAUDE.md](./CLAUDE.md) for detailed development instructions including:
+- How to create a new mini-app
+- Project structure and architecture
+- Theme colors and fonts
+- Testing requirements
+- OG image generation
+
+## Deployment
+
+- **Production:** GitHub Actions deploys to GitHub Pages on push to `main`
+- **PR Previews:** Cloudflare Pages provides automatic preview URLs for PRs
+
+See [cloudflare-previews.md](./cloudflare-previews.md) for Cloudflare setup details.
+
+## License
+
+MIT
