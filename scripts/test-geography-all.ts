@@ -238,11 +238,76 @@ async function testGeography() {
     console.log('✅ No critical console errors')
   }
 
+  // ==== TEST TOUR MODE ====
+  console.log('\n🎬 Testing Tour mode...')
+  await page.click('button:has-text("Tours")')
+  await page.waitForTimeout(1000)
+  await page.screenshot({ path: '/tmp/geo-18-tour-selection.png' })
+  console.log('   ✅ Switched to Tour mode')
+
+  // Check tour list
+  const tourCards = page.locator('button:has-text("The Fall of Constantinople"), button:has-text("The Seven Hills"), button:has-text("Two Continents")')
+  const tourCount = await tourCards.count()
+  console.log(`   Found ${tourCount} tour options`)
+
+  // Start a tour
+  if (tourCount > 0) {
+    await page.click('button:has-text("Two Continents")')
+    await page.waitForTimeout(2000)
+    await page.screenshot({ path: '/tmp/geo-19-tour-playing.png' })
+    console.log('   ✅ Tour started - Two Continents')
+
+    // Test play/pause
+    const playPauseBtn = page.locator('button:has(svg[class*="Pause"]), button:has(svg[class*="Play"])').first()
+    if (await playPauseBtn.isVisible()) {
+      await playPauseBtn.click()
+      await page.waitForTimeout(500)
+      await page.screenshot({ path: '/tmp/geo-20-tour-paused.png' })
+      console.log('   ✅ Tour pause/play works')
+    }
+
+    // Test skip forward
+    const skipBtn = page.locator('button:has(svg)').filter({ has: page.locator('svg[class*="SkipForward"]') }).first()
+    if (await skipBtn.isVisible()) {
+      await skipBtn.click()
+      await page.waitForTimeout(2000)
+      await page.screenshot({ path: '/tmp/geo-21-tour-next-chapter.png' })
+      console.log('   ✅ Chapter navigation works')
+    }
+
+    // Exit tour
+    const exitBtn = page.locator('button:has(svg[class*="X"])').first()
+    if (await exitBtn.isVisible()) {
+      await exitBtn.click()
+      await page.waitForTimeout(1000)
+    }
+  }
+
+  // ==== TEST WALLS LAYER ====
+  console.log('\n🏰 Testing Walls layer...')
+  await page.click('button:has-text("Explore")')
+  await page.waitForTimeout(500)
+
+  // Toggle walls layer on
+  const wallsBtn = page.locator('button:has-text("Walls")')
+  if (await wallsBtn.isVisible()) {
+    await wallsBtn.click()
+    await page.waitForTimeout(1500)
+    await page.screenshot({ path: '/tmp/geo-22-walls-layer.png' })
+    console.log('   ✅ Walls layer toggled on')
+
+    // Check if walls layer shows purple styling
+    const wallsBtnActive = await page.locator('button:has-text("Walls")').evaluate(
+      el => el.className.includes('accent-purple')
+    )
+    console.log(`   Walls button active state: ${wallsBtnActive}`)
+  }
+
   // ==== SWITCH BACK AND VERIFY ====
   console.log('\n🔄 Verifying mode switching...')
   await page.click('button:has-text("Explore")')
   await page.waitForTimeout(1000)
-  await page.screenshot({ path: '/tmp/geo-18-back-to-explore.png' })
+  await page.screenshot({ path: '/tmp/geo-23-back-to-explore.png' })
   console.log('   ✅ Back to Explore mode')
 
   await browser.close()

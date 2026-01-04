@@ -3,6 +3,7 @@ import Map, { Source, Layer, Marker, NavigationControl } from 'react-map-gl/mapb
 import type { MapRef } from 'react-map-gl/mapbox'
 import { Star, AlertCircle, MapPin } from 'lucide-react'
 import { regions, regionsToGeoJSON, ferryRoutes, bosphorusLine, goldenHorn } from '../../data/regions'
+import { getWallsGeoJSON, historicalLandmarks } from '../../data/walls'
 import type { Region } from '../../data/regions'
 import type { POI } from './hooks'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -22,7 +23,7 @@ const INITIAL_VIEW = {
 }
 
 interface MapViewProps {
-  mode: 'explore' | 'time' | 'here'
+  mode: 'explore' | 'time' | 'here' | 'tour'
   selectedRegion: string | null
   onRegionClick: (regionId: string | null) => void
   timeOfDay: number
@@ -30,6 +31,7 @@ interface MapViewProps {
     regions: boolean
     ferryRoutes: boolean
     waterLabels: boolean
+    walls: boolean
   }
   userLocation?: { lat: number; lon: number } | null
   selectedPOI?: POI | null
@@ -274,6 +276,51 @@ const MapView = forwardRef<MapRef, MapViewProps>(function MapView({
           />
         </Source>
       )}
+
+      {/* Theodosian Walls */}
+      {visibleLayers.walls && (
+        <Source id="walls" type="geojson" data={getWallsGeoJSON()}>
+          <Layer
+            id="walls-line"
+            type="line"
+            paint={{
+              'line-color': '#aa66ff',
+              'line-width': 4,
+              'line-opacity': 0.8,
+            }}
+          />
+          <Layer
+            id="walls-glow"
+            type="line"
+            paint={{
+              'line-color': '#aa66ff',
+              'line-width': 12,
+              'line-opacity': 0.2,
+              'line-blur': 4,
+            }}
+          />
+        </Source>
+      )}
+
+      {/* Historical Landmarks */}
+      {visibleLayers.walls && historicalLandmarks.map((landmark) => (
+        <Marker
+          key={landmark.id}
+          longitude={landmark.coords[0]}
+          latitude={landmark.coords[1]}
+          anchor="center"
+        >
+          <div className="relative group cursor-pointer">
+            <div className="w-8 h-8 bg-accent-purple/80 rounded-full flex items-center justify-center shadow-lg shadow-accent-purple/30 border-2 border-white/30">
+              <span className="text-sm">{landmark.emoji}</span>
+            </div>
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 bg-black/90 px-3 py-2 rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+              <div className="font-semibold">{landmark.name}</div>
+              <div className="text-text-muted">Built {landmark.built} AD</div>
+            </div>
+          </div>
+        </Marker>
+      ))}
 
       {/* Galata Marker (Home Base) - hide in here mode */}
       {mode !== 'here' && (
