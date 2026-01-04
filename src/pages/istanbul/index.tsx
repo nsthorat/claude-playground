@@ -5,9 +5,11 @@ import {
   Coffee, Wine, Camera, Waves, Building2, Train,
   Sun, Sunset, ChevronDown, ChevronUp, Check,
   Smartphone, CreditCard, Phone, Heart, Sparkles,
-  Landmark, BookOpen, Snowflake, Download, ShoppingBag, Gift
+  Landmark, BookOpen, Snowflake, Download, ShoppingBag, Gift,
+  Globe
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { GeographySection } from './components/geography'
 
 const BASE_PATH = '/claude-playground'
 
@@ -1979,6 +1981,7 @@ function HistoricalSection() {
 export default function Istanbul() {
   const tabs = [
     { id: 'itinerary', label: 'Itinerary', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'geography', label: 'Map', icon: <Globe className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <Landmark className="w-4 h-4" /> },
     { id: 'food', label: 'Eat & Drink', icon: <Utensils className="w-4 h-4" /> },
     { id: 'shopping', label: 'Shop', icon: <ShoppingBag className="w-4 h-4" /> },
@@ -2057,6 +2060,7 @@ export default function Istanbul() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         {activeTab === 'itinerary' && <ItinerarySection />}
+        {activeTab === 'geography' && <GeographySection />}
         {activeTab === 'history' && <HistoricalSection />}
         {activeTab === 'food' && <FoodSection />}
         {activeTab === 'shopping' && <ShoppingSection />}
