@@ -12,8 +12,13 @@
     "generate-og": "bun scripts/generate-og-images.ts"
   },
   "dependencies": {
+    "@paper-design/shaders-react": "^0.0.68",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@strudel/core": "^1.2.5",
+    "@strudel/mini": "^1.2.5",
+    "@strudel/tonal": "^1.2.5",
+    "@strudel/webaudio": "^1.2.6",
     "@tailwindcss/vite": "^4.1.18",
     "@turf/turf": "^7.3.1",
     "@types/three": "^0.182.0",
@@ -27,7 +32,8 @@
     "react-map-gl": "^8.1.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
-    "three": "^0.182.0"
+    "three": "^0.182.0",
+    "unmute-ios-audio": "^3.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
