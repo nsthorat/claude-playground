@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Pause, Volume2, Smartphone } from 'lucide-react'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
 import { useSensorModulation, mapRange } from '@/hooks/useSensorModulation'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -178,6 +179,11 @@ export default function DroneCathedral() {
     const pan = mapRange(tilt.gamma, -45, 45, -1, 1)
     synthRef.current.setPan(pan)
   }, [tilt, motionEnabled, permissionGranted, isPlaying])
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

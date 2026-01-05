@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { ArrowLeft, Play, Pause, Volume2 } from 'lucide-react'
 import { NeuroNoise } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -163,6 +164,11 @@ export default function TapeLoops() {
   const synthRef = useRef<ReturnType<typeof createTapeLoopSynth> | null>(null)
   const animationRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

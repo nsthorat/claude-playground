@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { ArrowLeft, Play, Pause, SkipForward } from 'lucide-react'
 import { Dithering } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -229,6 +230,11 @@ export default function SundayMorning() {
 
   const currentSectionId = structure[currentSectionIndex]
   const currentChords = chordProgressions[currentSectionId as keyof typeof chordProgressions]
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

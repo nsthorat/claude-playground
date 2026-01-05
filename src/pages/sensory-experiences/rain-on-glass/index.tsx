@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { ArrowLeft, Play, Pause, Volume2 } from 'lucide-react'
 import { Dithering } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -192,6 +193,11 @@ export default function RainOnGlass() {
   const audioContextRef = useRef<AudioContext | null>(null)
   const synthRef = useRef<ReturnType<typeof createRainSynth> | null>(null)
   const phraseIntervalRef = useRef<number | null>(null)
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

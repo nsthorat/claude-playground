@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Pause, SkipForward, Smartphone } from 'lucide-react'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
 import { useSensorModulation, mapRange } from '@/hooks/useSensorModulation'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -215,6 +216,11 @@ export default function GoldenHour() {
     const reverbWet = mapRange(tiltAmount, 0, 45, 0.3, 0.9)
     synthRef.current.setReverbWet(reverbWet)
   }, [tilt, motionEnabled, permissionGranted, isPlaying])
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

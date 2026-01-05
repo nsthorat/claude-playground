@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { ArrowLeft, Play, Pause } from 'lucide-react'
 import { Dithering } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -197,6 +198,11 @@ export default function GlassAndSteel() {
   const patternIndexRef = useRef({ marimba: 0, vibes: 0 })
 
   const currentPattern = patterns[structure[currentSectionIndex] as keyof typeof patterns]
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

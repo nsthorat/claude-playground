@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Pause, RotateCw } from 'lucide-react'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
 import { useSensorModulation, mapRange } from '@/hooks/useSensorModulation'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -115,6 +116,11 @@ export default function PhaseMusic() {
     setRotationMode(true)
     baseAlphaRef.current = null // Will be set on first reading
   }, [requestPermission])
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {

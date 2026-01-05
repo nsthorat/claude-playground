@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Pause, Vibrate } from 'lucide-react'
 import { NeuroNoise } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
 import { useSensorModulation } from '@/hooks/useSensorModulation'
+import { initIOSAudioUnlock } from '@/lib/ios-audio-unlock'
 
 const BASE_PATH = '/claude-playground'
 
@@ -251,6 +252,11 @@ export default function GlitchGarden() {
       }
     }
   }, [shake, shakeEnabled, permissionGranted, isPlaying])
+
+  // Initialize iOS audio unlock on mount
+  useEffect(() => {
+    initIOSAudioUnlock()
+  }, [])
 
   const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
