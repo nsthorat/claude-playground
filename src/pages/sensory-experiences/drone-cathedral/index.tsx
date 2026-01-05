@@ -179,16 +179,19 @@ export default function DroneCathedral() {
     synthRef.current.setPan(pan)
   }, [tilt, motionEnabled, permissionGranted, isPlaying])
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createDroneSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
+    // Start audio immediately in the click handler for iOS
+    const chord = chordSets[structure[currentSectionIndex] as keyof typeof chordSets]
+    synthRef.current?.startDrone(chord.fundamental, chord.ratios)
     setIsPlaying(true)
-  }, [])
+  }, [currentSectionIndex])
 
   const stopPlaying = useCallback(() => {
     setIsPlaying(false)
@@ -203,12 +206,19 @@ export default function DroneCathedral() {
     setCurrentSectionIndex(prev => (prev + 1) % structure.length)
   }, [])
 
-  // Start/update drone when section changes
+  // Track previous section to detect changes (not initial play)
+  const prevSectionRef = useRef(currentSectionIndex)
+
+  // Update drone when section changes (not on initial play - that's handled in startPlaying)
   useEffect(() => {
     if (!isPlaying || !synthRef.current) return
 
-    const chord = chordSets[structure[currentSectionIndex] as keyof typeof chordSets]
-    synthRef.current.startDrone(chord.fundamental, chord.ratios)
+    // Only start drone if section actually changed (not on initial play)
+    if (prevSectionRef.current !== currentSectionIndex) {
+      const chord = chordSets[structure[currentSectionIndex] as keyof typeof chordSets]
+      synthRef.current.startDrone(chord.fundamental, chord.ratios)
+    }
+    prevSectionRef.current = currentSectionIndex
 
     // Auto advance every 45 seconds
     if (autoAdvance) {

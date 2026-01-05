@@ -152,18 +152,23 @@ export default function MidnightPiano() {
 
   const currentSection = sections[structure[currentSectionIndex] as keyof typeof sections]
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createPianoSynth(audioContextRef.current)
     }
 
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
 
+    // Play first note immediately in click handler for iOS
+    const section = sections[structure[currentSectionIndex] as keyof typeof sections]
+    const note = section.notes[Math.floor(Math.random() * section.notes.length)]
+    synthRef.current?.playNote(note, section.velocity)
+
     setIsPlaying(true)
-  }, [])
+  }, [currentSectionIndex])
 
   const stopPlaying = useCallback(() => {
     setIsPlaying(false)

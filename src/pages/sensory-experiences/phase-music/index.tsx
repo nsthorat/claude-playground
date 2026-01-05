@@ -116,15 +116,18 @@ export default function PhaseMusic() {
     baseAlphaRef.current = null // Will be set on first reading
   }, [requestPermission])
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createPhaseSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
     phaseRef.current = 0
+    // Play first note immediately in click handler for iOS
+    const note = PATTERN[0]
+    synthRef.current?.playNote(noteToFreq(note), -0.5, 0.5)
     setIsPlaying(true)
   }, [])
 

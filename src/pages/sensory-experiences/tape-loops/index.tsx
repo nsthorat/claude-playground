@@ -164,19 +164,24 @@ export default function TapeLoops() {
   const animationRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createTapeLoopSynth(audioContextRef.current)
     }
 
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
 
     startTimeRef.current = performance.now()
+    // Play first note immediately in click handler for iOS
+    const firstActiveLoop = loops.find(l => loopStates[l.id].active)
+    if (firstActiveLoop) {
+      synthRef.current?.playTone(noteToFreq(firstActiveLoop.note), 4)
+    }
     setIsPlaying(true)
-  }, [])
+  }, [loopStates])
 
   const stopPlaying = useCallback(() => {
     setIsPlaying(false)

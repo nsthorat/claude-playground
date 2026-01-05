@@ -242,15 +242,17 @@ export default function Warehouse() {
 
   const currentSection = sections[structure[currentSectionIndex] as keyof typeof sections]
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createTechnoSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
     beatCountRef.current = 0
+    // Play first sound immediately in click handler for iOS
+    synthRef.current?.kick()
     setIsPlaying(true)
   }, [])
 

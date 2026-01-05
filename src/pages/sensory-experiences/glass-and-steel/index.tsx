@@ -198,15 +198,17 @@ export default function GlassAndSteel() {
 
   const currentPattern = patterns[structure[currentSectionIndex] as keyof typeof patterns]
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createGlassSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
     patternIndexRef.current = { marimba: 0, vibes: 0 }
+    // Play first note immediately in click handler for iOS
+    synthRef.current?.marimba(marimbaScale[0], -0.3)
     setIsPlaying(true)
   }, [])
 

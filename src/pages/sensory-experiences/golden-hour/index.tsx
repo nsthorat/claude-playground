@@ -216,17 +216,21 @@ export default function GoldenHour() {
     synthRef.current.setReverbWet(reverbWet)
   }, [tilt, motionEnabled, permissionGranted, isPlaying])
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createGoldenSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
     beatCountRef.current = 0
+    // Play first sound immediately in click handler for iOS
+    const chord = chords[structure[currentSectionIndex] as keyof typeof chords]
+    synthRef.current?.pad(chord.notes)
+    synthRef.current?.kick()
     setIsPlaying(true)
-  }, [])
+  }, [currentSectionIndex])
 
   const stopPlaying = useCallback(() => {
     setIsPlaying(false)

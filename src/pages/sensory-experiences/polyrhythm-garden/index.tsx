@@ -104,14 +104,17 @@ export default function PolyrhythmGarden() {
   const synthRef = useRef<ReturnType<typeof createPolySynth> | null>(null)
   const intervalsRef = useRef<Record<number, number>>({})
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createPolySynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
+    // Play first tone immediately in click handler for iOS
+    const firstVoice = voices[0]
+    synthRef.current?.playTone(noteToFreq(firstVoice.note), -0.5)
     setIsPlaying(true)
   }, [])
 

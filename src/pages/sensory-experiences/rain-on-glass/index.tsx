@@ -193,15 +193,16 @@ export default function RainOnGlass() {
   const synthRef = useRef<ReturnType<typeof createRainSynth> | null>(null)
   const phraseIntervalRef = useRef<number | null>(null)
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createRainSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
 
+    // Start rain immediately in click handler for iOS
     synthRef.current?.startRain()
     setIsPlaying(true)
   }, [])

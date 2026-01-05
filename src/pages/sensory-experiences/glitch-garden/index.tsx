@@ -252,14 +252,17 @@ export default function GlitchGarden() {
     }
   }, [shake, shakeEnabled, permissionGranted, isPlaying])
 
-  const startPlaying = useCallback(() => {
+  const startPlaying = useCallback(async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext()
       synthRef.current = createGlitchSynth(audioContextRef.current)
     }
     if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
+      await audioContextRef.current.resume()
     }
+    // Play first grain immediately in click handler for iOS
+    const source = grainSources[0]
+    synthRef.current?.grain(source.freq, -0.5, 1)
     setIsPlaying(true)
   }, [])
 
