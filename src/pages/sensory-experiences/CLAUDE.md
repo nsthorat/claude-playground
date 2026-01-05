@@ -467,6 +467,253 @@ function ParamSlider({ label, value, onChange, min = 0, max = 1 }) {
 
 ---
 
+## Sensor-Driven Modulation
+
+Use phone sensors to add physical expressivity to pieces. These turn passive listening into active performance.
+
+### Available Sensors (iOS Safari)
+
+| Sensor | API | Permission | Data |
+|--------|-----|------------|------|
+| **Motion** | `DeviceMotionEvent` | Required | acceleration (x,y,z), rotationRate (α,β,γ) |
+| **Orientation** | `DeviceOrientationEvent` | Required | alpha (compass 0-360°), beta (front/back -180 to 180°), gamma (left/right -90 to 90°) |
+| **Touch** | `TouchEvent` | None | touches count, force (0-1 with 3D Touch) |
+
+### Top Modulation Ideas (Recommended)
+
+#### 1. Tilt → Filter & Pan (Most Intuitive)
+- **Beta (front/back tilt)**: Open/close lowpass filter
+  - Phone flat → neutral (1500Hz)
+  - Tilt forward → bright (4000Hz)
+  - Tilt back → muffled (300Hz)
+- **Gamma (left/right tilt)**: Stereo panning
+  - Maps naturally to spatial audio
+
+**Best for:** Drone Cathedral, Golden Hour, any pad-based pieces
+
+```tsx
+const filterFreq = mapRange(tilt.beta, -45, 45, 300, 4000)
+const pan = mapRange(tilt.gamma, -45, 45, -1, 1)
+filter.frequency.value = filterFreq
+panner.pan.value = pan
+```
+
+#### 2. Shake → Chaos/Glitch
+- Calculate shake intensity from acceleration magnitude
+- Higher values trigger glitch events, stutters, bursts
+- Threshold to avoid accidental triggers
+
+**Best for:** Glitch Garden, Warehouse
+
+```tsx
+const shakeMagnitude = Math.sqrt(accel.x**2 + accel.y**2 + accel.z**2)
+if (shakeMagnitude > 15) triggerGlitch()
+```
+
+#### 3. Rotation → Phase Offset (Perfect for Phase Music)
+- Alpha (compass heading) controls phase offset between voices
+- Physically "spin" through phase relationships
+- Full 360° rotation = full phase cycle
+
+**Best for:** Phase Music, Polyrhythm Garden
+
+```tsx
+const phaseOffset = (orientation.alpha / 360) * patternLength
+voice2.offset = phaseOffset
+```
+
+#### 4. Touch Force → Intensity/Dynamics
+- 3D Touch pressure (0-1) controls volume, brightness, harmonic content
+- Light touch = soft, gentle
+- Press hard = loud, bright, rich harmonics
+
+**Best for:** All pieces with sustained interaction
+
+```tsx
+const intensity = touchForce || 0.5 // fallback if no 3D Touch
+masterGain.gain.value = 0.2 + intensity * 0.5
+filter.frequency.value = 800 + intensity * 2000
+```
+
+#### 5. Touch Position → Pitch/Timbre
+- Y-position: pitch (top = high, bottom = low)
+- X-position: timbre or pan
+- Turn the entire screen into a theremin/XY pad
+
+**Best for:** Experimental pieces, new "Theremin" piece
+
+```tsx
+const pitch = mapRange(touch.y, 0, screenHeight, 880, 110) // A5 to A2
+const timbre = mapRange(touch.x, 0, screenWidth, 0, 1)
+oscillator.frequency.value = pitch
+```
+
+### Utility Hook: `useSensorModulation`
+
+```tsx
+import { useState, useEffect, useCallback } from 'react'
+
+interface SensorState {
+  tilt: { alpha: number; beta: number; gamma: number }
+  accel: { x: number; y: number; z: number }
+  shake: number
+  touch: { x: number; y: number; force: number; active: boolean }
+}
+
+export function useSensorModulation() {
+  const [sensors, setSensors] = useState<SensorState>({
+    tilt: { alpha: 0, beta: 0, gamma: 0 },
+    accel: { x: 0, y: 0, z: 0 },
+    shake: 0,
+    touch: { x: 0, y: 0, force: 0, active: false },
+  })
+  const [permissionGranted, setPermissionGranted] = useState(false)
+
+  const requestPermission = useCallback(async () => {
+    // @ts-expect-error iOS specific
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      // @ts-expect-error iOS specific
+      const motionPerm = await DeviceMotionEvent.requestPermission()
+      // @ts-expect-error iOS specific
+      const orientPerm = await DeviceOrientationEvent.requestPermission()
+      if (motionPerm === 'granted' && orientPerm === 'granted') {
+        setPermissionGranted(true)
+      }
+    } else {
+      setPermissionGranted(true) // Android doesn't need permission
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!permissionGranted) return
+
+    const handleMotion = (e: DeviceMotionEvent) => {
+      const accel = {
+        x: e.acceleration?.x ?? 0,
+        y: e.acceleration?.y ?? 0,
+        z: e.acceleration?.z ?? 0,
+      }
+      const shake = Math.sqrt(accel.x ** 2 + accel.y ** 2 + accel.z ** 2)
+      setSensors(prev => ({ ...prev, accel, shake }))
+    }
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      setSensors(prev => ({
+        ...prev,
+        tilt: {
+          alpha: e.alpha ?? 0,
+          beta: e.beta ?? 0,
+          gamma: e.gamma ?? 0,
+        },
+      }))
+    }
+
+    window.addEventListener('devicemotion', handleMotion)
+    window.addEventListener('deviceorientation', handleOrientation)
+
+    return () => {
+      window.removeEventListener('devicemotion', handleMotion)
+      window.removeEventListener('deviceorientation', handleOrientation)
+    }
+  }, [permissionGranted])
+
+  useEffect(() => {
+    const handleTouch = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (t) {
+        setSensors(prev => ({
+          ...prev,
+          touch: { x: t.clientX, y: t.clientY, force: t.force, active: true },
+        }))
+      }
+    }
+
+    const handleTouchEnd = () => {
+      setSensors(prev => ({ ...prev, touch: { ...prev.touch, active: false } }))
+    }
+
+    window.addEventListener('touchstart', handleTouch, { passive: true })
+    window.addEventListener('touchmove', handleTouch, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouch)
+      window.removeEventListener('touchmove', handleTouch)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [])
+
+  return { ...sensors, requestPermission, permissionGranted }
+}
+
+// Utility function
+function mapRange(value: number, inMin: number, inMax: number, outMin: number, outMax: number) {
+  return ((value - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin
+}
+```
+
+### Integration Example
+
+```tsx
+export default function DroneCathedral() {
+  const { tilt, shake, touch, requestPermission, permissionGranted } = useSensorModulation()
+  const filterRef = useRef<BiquadFilterNode | null>(null)
+  const pannerRef = useRef<StereoPannerNode | null>(null)
+
+  // Apply sensor modulation in audio effect loop
+  useEffect(() => {
+    if (!filterRef.current || !pannerRef.current) return
+
+    // Tilt controls filter
+    const filterFreq = mapRange(
+      Math.max(-45, Math.min(45, tilt.beta)), // clamp
+      -45, 45,
+      300, 4000
+    )
+    filterRef.current.frequency.value = filterFreq
+
+    // Tilt controls pan
+    const pan = mapRange(
+      Math.max(-45, Math.min(45, tilt.gamma)),
+      -45, 45,
+      -1, 1
+    )
+    pannerRef.current.pan.value = pan
+  }, [tilt])
+
+  return (
+    <div>
+      {!permissionGranted && (
+        <button onClick={requestPermission}>
+          Enable Motion Control
+        </button>
+      )}
+      {/* ... rest of piece */}
+    </div>
+  )
+}
+```
+
+### Piece Ideas with Sensor Control
+
+| Piece | Primary Sensor | Modulation |
+|-------|---------------|------------|
+| **Drone Cathedral** | Tilt | Filter sweep + pan |
+| **Phase Music** | Rotation (alpha) | Phase offset between voices |
+| **Glitch Garden** | Shake | Chaos/glitch trigger |
+| **Golden Hour** | Tilt | Reverb wetness + filter |
+| **New: Theremin** | Touch position | XY pitch/timbre control |
+| **New: Tilt Synth** | All sensors | Full gestural instrument |
+
+### UI Considerations
+
+1. **Permission Button** - Add "Enable Motion" button that appears before first play
+2. **Visual Feedback** - Show current tilt/shake values subtly in UI
+3. **Calibration** - Consider a "hold flat to calibrate" step
+4. **Fallback** - Always work without sensors (desktop, denied permission)
+
+---
+
 ## Creative Freedom
 
 **Claude, when composing pieces:**
