@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ArrowLeft, Play, Pause, Settings } from 'lucide-react'
+import { ArrowLeft, Play, Pause, RotateCw } from 'lucide-react'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { useSensorModulation, mapRange } from '@/hooks/useSensorModulation'
 
 const BASE_PATH = '/claude-playground'
 
@@ -95,14 +96,25 @@ export default function PhaseMusic() {
   const [phaseRate, setPhaseRate] = useState(0.002) // How fast voice 2 drifts
   const [voice1Index, setVoice1Index] = useState(0)
   const [voice2Index, setVoice2Index] = useState(0)
+  const [rotationMode, setRotationMode] = useState(false)
 
   const audioContextRef = useRef<AudioContext | null>(null)
   const synthRef = useRef<ReturnType<typeof createPhaseSynth> | null>(null)
   const intervalRef = useRef<number | null>(null)
   const phaseRef = useRef(0)
+  const baseAlphaRef = useRef<number | null>(null)
+
+  const { tilt, requestPermission, permissionGranted } = useSensorModulation()
 
   const BPM = 144
   const NOTE_MS = 60000 / BPM / 2 // 16th notes
+
+  // Handle rotation mode toggle
+  const handleEnableRotation = useCallback(async () => {
+    await requestPermission()
+    setRotationMode(true)
+    baseAlphaRef.current = null // Will be set on first reading
+  }, [requestPermission])
 
   const startPlaying = useCallback(() => {
     if (!audioContextRef.current) {
@@ -121,6 +133,25 @@ export default function PhaseMusic() {
     if (intervalRef.current) clearInterval(intervalRef.current)
   }, [])
 
+  // Calculate rotation-based phase offset
+  const rotationPhaseOffset = useCallback(() => {
+    if (!rotationMode || !permissionGranted) return null
+
+    // Set base alpha on first reading
+    if (baseAlphaRef.current === null) {
+      baseAlphaRef.current = tilt.alpha
+    }
+
+    // Calculate rotation from base position
+    let rotation = tilt.alpha - baseAlphaRef.current
+    // Handle wraparound at 0/360
+    if (rotation > 180) rotation -= 360
+    if (rotation < -180) rotation += 360
+
+    // Map full rotation (-180 to 180) to full pattern length
+    return mapRange(rotation, -180, 180, 0, PATTERN.length)
+  }, [rotationMode, permissionGranted, tilt.alpha])
+
   useEffect(() => {
     if (!isPlaying || !synthRef.current) return
 
@@ -135,19 +166,31 @@ export default function PhaseMusic() {
       synth.playNote(noteToFreq(note1), -0.5, 0.5)
       setVoice1Index(v1Index % PATTERN.length)
 
-      // Voice 2 - right channel, gradually drifting
-      // Calculate which note based on accumulated phase
-      const v2Index = Math.floor(v2Phase) % PATTERN.length
+      // Voice 2 - right channel
+      let v2Index: number
+      let currentOffset: number
+
+      if (rotationMode && permissionGranted) {
+        // Rotation mode: phase offset controlled by phone rotation
+        const rotOffset = rotationPhaseOffset() ?? 0
+        v2Index = Math.floor(v1Index + rotOffset) % PATTERN.length
+        if (v2Index < 0) v2Index += PATTERN.length
+        currentOffset = rotOffset
+      } else {
+        // Auto mode: gradually drifting phase
+        v2Index = Math.floor(v2Phase) % PATTERN.length
+        v2Phase += 1 + phaseRate
+        currentOffset = (v2Phase - v1Index) % PATTERN.length
+      }
+
       const note2 = PATTERN[v2Index]
       synth.playNote(noteToFreq(note2), 0.5, 0.5)
       setVoice2Index(v2Index)
 
       // Advance indices
       v1Index++
-      v2Phase += 1 + phaseRate // Voice 2 is slightly faster
 
       // Update phase display
-      const currentOffset = (v2Phase - v1Index) % PATTERN.length
       setPhaseOffset(currentOffset)
       phaseRef.current = currentOffset
     }
@@ -155,7 +198,7 @@ export default function PhaseMusic() {
     intervalRef.current = window.setInterval(tick, NOTE_MS)
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [isPlaying, phaseRate, NOTE_MS])
+  }, [isPlaying, phaseRate, NOTE_MS, rotationMode, permissionGranted, rotationPhaseOffset])
 
   useEffect(() => {
     if (synthRef.current) synthRef.current.setVolume(volume)
@@ -267,12 +310,43 @@ export default function PhaseMusic() {
                 className="flex-1 accent-cyan-500" />
               <span className="text-sm font-mono text-cyan-200/40 w-12">{Math.round(volume * 100)}%</span>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-cyan-200/60 w-20">Drift Rate</span>
-              <input type="range" min={0.0005} max={0.01} step={0.0005} value={phaseRate}
-                onChange={e => setPhaseRate(parseFloat(e.target.value))}
-                className="flex-1 accent-cyan-500" />
-              <span className="text-sm font-mono text-cyan-200/40 w-12">{(phaseRate * 1000).toFixed(1)}</span>
+
+            {!rotationMode && (
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-cyan-200/60 w-20">Drift Rate</span>
+                <input type="range" min={0.0005} max={0.01} step={0.0005} value={phaseRate}
+                  onChange={e => setPhaseRate(parseFloat(e.target.value))}
+                  className="flex-1 accent-cyan-500" />
+                <span className="text-sm font-mono text-cyan-200/40 w-12">{(phaseRate * 1000).toFixed(1)}</span>
+              </div>
+            )}
+
+            {/* Rotation control mode */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <RotateCw className="w-4 h-4 text-cyan-400/60" />
+                <span className="text-sm text-cyan-200/60">Spin to phase</span>
+              </div>
+              {!rotationMode ? (
+                <button
+                  onClick={handleEnableRotation}
+                  className="px-3 py-1 rounded-lg text-sm bg-cyan-900/30 text-cyan-400 hover:bg-cyan-800/30 transition-all"
+                >
+                  Enable
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-cyan-300/50 font-mono">
+                    {tilt.alpha.toFixed(0)}°
+                  </span>
+                  <button
+                    onClick={() => { setRotationMode(false); baseAlphaRef.current = null }}
+                    className="px-2 py-0.5 rounded text-xs bg-cyan-500/30 text-cyan-200"
+                  >
+                    Auto
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

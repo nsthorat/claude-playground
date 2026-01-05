@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ArrowLeft, Play, Pause } from 'lucide-react'
+import { ArrowLeft, Play, Pause, Vibrate } from 'lucide-react'
 import { NeuroNoise } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { useSensorModulation } from '@/hooks/useSensorModulation'
 
 const BASE_PATH = '/claude-playground'
 
@@ -191,12 +192,65 @@ export default function GlitchGarden() {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [volume, setVolume] = useState(0.8)
   const [activeGrains, setActiveGrains] = useState<number[]>([])
+  const [shakeEnabled, setShakeEnabled] = useState(false)
+  const [shakeIntensity, setShakeIntensity] = useState(0)
 
   const audioContextRef = useRef<AudioContext | null>(null)
   const synthRef = useRef<ReturnType<typeof createGlitchSynth> | null>(null)
   const intervalRef = useRef<number | null>(null)
+  const lastShakeTimeRef = useRef(0)
+
+  const { shake, requestPermission, permissionGranted } = useSensorModulation()
 
   const currentPattern = patterns[structure[currentSectionIndex] as keyof typeof patterns]
+
+  // Handle shake enable
+  const handleEnableShake = useCallback(async () => {
+    await requestPermission()
+    setShakeEnabled(true)
+  }, [requestPermission])
+
+  // Shake detection and glitch trigger
+  useEffect(() => {
+    if (!shakeEnabled || !permissionGranted || !isPlaying || !synthRef.current) return
+
+    // Update intensity display
+    setShakeIntensity(Math.min(shake / 20, 1))
+
+    // Trigger glitch on shake above threshold
+    const now = Date.now()
+    const SHAKE_THRESHOLD = 12
+    const SHAKE_COOLDOWN = 100 // ms between triggers
+
+    if (shake > SHAKE_THRESHOLD && now - lastShakeTimeRef.current > SHAKE_COOLDOWN) {
+      lastShakeTimeRef.current = now
+      const synth = synthRef.current
+
+      // Intensity determines glitch type
+      const intensity = Math.min((shake - SHAKE_THRESHOLD) / 20, 1)
+
+      if (intensity > 0.7) {
+        // Big shake = multiple effects
+        const source = grainSources[Math.floor(Math.random() * grainSources.length)]
+        synth.burst(source.freq, 5 + Math.floor(Math.random() * 5))
+        synth.stutter(source.freq * 2, 4)
+        synth.static(0.15)
+      } else if (intensity > 0.4) {
+        // Medium shake = burst + stutter
+        const source = grainSources[Math.floor(Math.random() * grainSources.length)]
+        synth.burst(source.freq, 3 + Math.floor(Math.random() * 3))
+        synth.stutter(source.freq, 2)
+      } else {
+        // Light shake = single effect
+        const source = grainSources[Math.floor(Math.random() * grainSources.length)]
+        if (Math.random() > 0.5) {
+          synth.burst(source.freq, 3)
+        } else {
+          synth.static(0.08)
+        }
+      }
+    }
+  }, [shake, shakeEnabled, permissionGranted, isPlaying])
 
   const startPlaying = useCallback(() => {
     if (!audioContextRef.current) {
@@ -359,8 +413,8 @@ export default function GlitchGarden() {
             <div className="text-lime-300/40 text-sm">{BPM} BPM</div>
           </div>
 
-          {/* Volume */}
-          <div className="w-full bg-zinc-800/30 backdrop-blur-sm rounded-xl p-4 border border-lime-500/20">
+          {/* Controls */}
+          <div className="w-full bg-zinc-800/30 backdrop-blur-sm rounded-xl p-4 border border-lime-500/20 space-y-4">
             <div className="flex items-center gap-4">
               <span className="text-sm text-lime-300/60 w-16">Volume</span>
               <input
@@ -375,6 +429,35 @@ export default function GlitchGarden() {
               <span className="text-sm font-mono text-lime-300/40 w-12">
                 {Math.round(volume * 100)}%
               </span>
+            </div>
+
+            {/* Shake control */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Vibrate className="w-4 h-4 text-lime-400/60" />
+                <span className="text-sm text-lime-300/60">Shake to glitch</span>
+              </div>
+              {!shakeEnabled ? (
+                <button
+                  onClick={handleEnableShake}
+                  className="px-3 py-1 rounded-lg text-sm bg-lime-900/30 text-lime-400 hover:bg-lime-800/30 transition-all"
+                >
+                  Enable
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  {/* Shake intensity meter */}
+                  <div className="w-16 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-lime-400 transition-all"
+                      style={{ width: `${shakeIntensity * 100}%` }}
+                    />
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-xs bg-lime-500/30 text-lime-200">
+                    Active
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

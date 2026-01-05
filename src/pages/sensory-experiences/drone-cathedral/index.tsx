@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ArrowLeft, Play, Pause, Volume2 } from 'lucide-react'
+import { ArrowLeft, Play, Pause, Volume2, Smartphone } from 'lucide-react'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { useSensorModulation, mapRange } from '@/hooks/useSensorModulation'
 
 const BASE_PATH = '/claude-playground'
 
@@ -43,15 +44,20 @@ function createDroneSynth(audioContext: AudioContext) {
   const preDelay = audioContext.createDelay(0.1)
   preDelay.delayTime.value = 0.05
 
-  // Warmth filter
+  // Warmth filter (exposed for sensor modulation)
   const warmth = audioContext.createBiquadFilter()
   warmth.type = 'lowpass'
   warmth.frequency.value = 2500
   warmth.Q.value = 0.5
 
+  // Panner (exposed for sensor modulation)
+  const panner = audioContext.createStereoPanner()
+  panner.pan.value = 0
+
   // Routing
   masterGain.connect(warmth)
-  warmth.connect(audioContext.destination)
+  warmth.connect(panner)
+  panner.connect(audioContext.destination)
   warmth.connect(preDelay)
   preDelay.connect(convolver)
   convolver.connect(reverbGain)
@@ -130,6 +136,10 @@ function createDroneSynth(audioContext: AudioContext) {
     },
 
     setVolume: (v: number) => { masterGain.gain.value = v * 0.3 },
+
+    // Expose for sensor modulation
+    setFilterFreq: (freq: number) => { warmth.frequency.value = freq },
+    setPan: (pan: number) => { panner.pan.value = pan },
   }
 }
 
@@ -138,12 +148,36 @@ export default function DroneCathedral() {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [volume, setVolume] = useState(0.8)
   const [autoAdvance, setAutoAdvance] = useState(true)
+  const [motionEnabled, setMotionEnabled] = useState(false)
 
   const audioContextRef = useRef<AudioContext | null>(null)
   const synthRef = useRef<ReturnType<typeof createDroneSynth> | null>(null)
   const sectionTimeoutRef = useRef<number | null>(null)
 
+  const { tilt, requestPermission, permissionGranted, needsPermission } = useSensorModulation()
+
   const currentChord = chordSets[structure[currentSectionIndex] as keyof typeof chordSets]
+
+  // Handle motion permission request
+  const handleEnableMotion = useCallback(async () => {
+    await requestPermission()
+    setMotionEnabled(true)
+  }, [requestPermission])
+
+  // Apply sensor modulation when tilt changes
+  useEffect(() => {
+    if (!motionEnabled || !permissionGranted || !synthRef.current || !isPlaying) return
+
+    // Map beta (front/back tilt) to filter frequency
+    // Phone flat (0°) = 1500Hz, forward (+45°) = 4000Hz, back (-45°) = 300Hz
+    const filterFreq = mapRange(tilt.beta, -45, 45, 300, 4000)
+    synthRef.current.setFilterFreq(filterFreq)
+
+    // Map gamma (left/right tilt) to pan
+    // Left tilt = pan left, right tilt = pan right
+    const pan = mapRange(tilt.gamma, -45, 45, -1, 1)
+    synthRef.current.setPan(pan)
+  }, [tilt, motionEnabled, permissionGranted, isPlaying])
 
   const startPlaying = useCallback(() => {
     if (!audioContextRef.current) {
@@ -329,6 +363,31 @@ export default function DroneCathedral() {
               >
                 {autoAdvance ? 'On' : 'Off'}
               </button>
+            </div>
+
+            {/* Motion control */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-violet-400/60" />
+                <span className="text-sm text-violet-400/60">Tilt control</span>
+              </div>
+              {!motionEnabled ? (
+                <button
+                  onClick={handleEnableMotion}
+                  className="px-3 py-1 rounded-lg text-sm bg-violet-900/30 text-violet-400 hover:bg-violet-800/30 transition-all"
+                >
+                  Enable
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-violet-300/50 font-mono">
+                    {tilt.beta.toFixed(0)}° / {tilt.gamma.toFixed(0)}°
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-xs bg-violet-500/30 text-violet-200">
+                    Active
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

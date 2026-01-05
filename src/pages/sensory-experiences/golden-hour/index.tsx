@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ArrowLeft, Play, Pause, SkipForward } from 'lucide-react'
+import { ArrowLeft, Play, Pause, SkipForward, Smartphone } from 'lucide-react'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { cn } from '@/lib/utils'
+import { useSensorModulation, mapRange } from '@/hooks/useSensorModulation'
 
 const BASE_PATH = '/claude-playground'
 
@@ -170,6 +171,10 @@ function createGoldenSynth(audioContext: AudioContext) {
     },
 
     setVolume: (v: number) => { masterGain.gain.value = v * 0.35 },
+
+    // Expose for sensor modulation
+    setFilterFreq: (freq: number) => { warmth.frequency.value = freq },
+    setReverbWet: (wet: number) => { reverbGain.gain.value = wet },
   }
 }
 
@@ -178,13 +183,38 @@ export default function GoldenHour() {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const [volume, setVolume] = useState(0.8)
   const [beat, setBeat] = useState(0)
+  const [motionEnabled, setMotionEnabled] = useState(false)
 
   const audioContextRef = useRef<AudioContext | null>(null)
   const synthRef = useRef<ReturnType<typeof createGoldenSynth> | null>(null)
   const intervalRef = useRef<number | null>(null)
   const beatCountRef = useRef(0)
 
+  const { tilt, requestPermission, permissionGranted } = useSensorModulation()
+
   const currentChord = chords[structure[currentSectionIndex] as keyof typeof chords]
+
+  // Handle motion permission request
+  const handleEnableMotion = useCallback(async () => {
+    await requestPermission()
+    setMotionEnabled(true)
+  }, [requestPermission])
+
+  // Apply sensor modulation when tilt changes
+  useEffect(() => {
+    if (!motionEnabled || !permissionGranted || !synthRef.current || !isPlaying) return
+
+    // Map beta (front/back tilt) to filter frequency
+    // Tilt forward = brighter/warmer, tilt back = darker/muffled
+    const filterFreq = mapRange(tilt.beta, -45, 45, 1500, 5000)
+    synthRef.current.setFilterFreq(filterFreq)
+
+    // Map gamma (left/right tilt) to reverb wetness
+    // More tilt = more reverb (spacious feeling)
+    const tiltAmount = Math.abs(tilt.gamma)
+    const reverbWet = mapRange(tiltAmount, 0, 45, 0.3, 0.9)
+    synthRef.current.setReverbWet(reverbWet)
+  }, [tilt, motionEnabled, permissionGranted, isPlaying])
 
   const startPlaying = useCallback(() => {
     if (!audioContextRef.current) {
@@ -345,8 +375,8 @@ export default function GoldenHour() {
             <div className="text-orange-200/40 text-sm">{BPM} BPM</div>
           </div>
 
-          {/* Volume */}
-          <div className="w-full bg-orange-900/20 backdrop-blur-sm rounded-xl p-4 border border-orange-500/20">
+          {/* Controls */}
+          <div className="w-full bg-orange-900/20 backdrop-blur-sm rounded-xl p-4 border border-orange-500/20 space-y-4">
             <div className="flex items-center gap-4">
               <span className="text-sm text-orange-200/60 w-16">Volume</span>
               <input
@@ -361,6 +391,31 @@ export default function GoldenHour() {
               <span className="text-sm font-mono text-orange-200/40 w-12">
                 {Math.round(volume * 100)}%
               </span>
+            </div>
+
+            {/* Motion control */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-amber-400/60" />
+                <span className="text-sm text-orange-200/60">Tilt control</span>
+              </div>
+              {!motionEnabled ? (
+                <button
+                  onClick={handleEnableMotion}
+                  className="px-3 py-1 rounded-lg text-sm bg-orange-900/30 text-amber-400 hover:bg-orange-800/30 transition-all"
+                >
+                  Enable
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-amber-300/50 font-mono">
+                    {tilt.beta.toFixed(0)}° / {tilt.gamma.toFixed(0)}°
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-xs bg-amber-500/30 text-amber-200">
+                    Active
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
