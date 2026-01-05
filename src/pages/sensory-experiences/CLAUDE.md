@@ -1,6 +1,6 @@
-# Music App - Creative Guidelines
+# Sensory Experiences - Creative Guidelines
 
-A collection of **long-form, evolving musical pieces** - each its own sonic world with custom visuals. These are not loops, not background music - they are **compositions that breathe and change**, with sections that flow into each other like movements of a symphony.
+A collection of **immersive audio-visual experiences** - each its own sonic and visual world. These are not loops, not background media - they are **compositions that breathe and change**, with sections that flow into each other like movements of a symphony.
 
 The user presses play and gets lost in it.
 
@@ -12,15 +12,15 @@ The user presses play and gets lost in it.
 
 > "One of my long-term interests has been the invention of 'machines' and 'systems' that could produce musical and visual experiences... the point of them was to make music with materials and processes I specified, but in combinations and interactions that I did not." — Brian Eno
 
-Each piece should feel **alive** - not randomly chaotic, but **purposefully evolving**. Like watching clouds form and reform, or waves on a shore. The listener should feel they're witnessing something unfold, not hearing something repeat.
+Each piece should feel **alive** - not randomly chaotic, but **purposefully evolving**. Like watching clouds form and reform, or waves on a shore. The listener/viewer should feel they're witnessing something unfold, not hearing/seeing something repeat.
 
 ---
 
 ## Structure (Mirrors Recipes)
 
 ```
-music/
-├── index.html                    # Music listing page entry
+sensory-experiences/
+├── index.html                    # Experience listing page entry
 ├── midnight-piano/
 │   └── index.html               # Individual piece entry
 ├── night-drive/
@@ -28,12 +28,12 @@ music/
 └── ...
 
 src/
-├── apps/music/
-│   ├── main.tsx                 # Music listing React entry
+├── apps/sensory-experiences/
+│   ├── main.tsx                 # Experience listing React entry
 │   └── midnight-piano/
 │       └── main.tsx             # Individual piece entry
-└── pages/music/
-    ├── index.tsx                # Music listing component
+└── pages/sensory-experiences/
+    ├── index.tsx                # Experience listing component
     ├── app.config.tsx           # For home page discovery
     ├── CLAUDE.md                # This file
     └── midnight-piano/
@@ -51,7 +51,7 @@ export const pieceConfig = {
   title: 'Midnight Piano',
   description: 'Sparse piano notes floating in endless reverb',
   icon: <Piano className="w-5 h-5" />,
-  path: '/music/midnight-piano/',
+  path: '/sensory-experiences/midnight-piano/',
 
   // Musical metadata
   bpm: 60,
