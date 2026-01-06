@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { GeographySection } from './components/geography'
+import { CatsSection } from './components/CatsSection'
 
 const BASE_PATH = '/claude-playground'
 
@@ -1983,6 +1984,7 @@ export default function Istanbul() {
     { id: 'itinerary', label: 'Itinerary', icon: <Calendar className="w-4 h-4" /> },
     { id: 'geography', label: 'Map', icon: <Globe className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <Landmark className="w-4 h-4" /> },
+    { id: 'cats', label: 'Cats', icon: <Heart className="w-4 h-4" /> },
     { id: 'food', label: 'Eat & Drink', icon: <Utensils className="w-4 h-4" /> },
     { id: 'shopping', label: 'Shop', icon: <ShoppingBag className="w-4 h-4" /> },
     { id: 'neighborhoods', label: 'Areas', icon: <Compass className="w-4 h-4" /> },
@@ -2062,6 +2064,7 @@ export default function Istanbul() {
         {activeTab === 'itinerary' && <ItinerarySection />}
         {activeTab === 'geography' && <GeographySection />}
         {activeTab === 'history' && <HistoricalSection />}
+        {activeTab === 'cats' && <CatsSection />}
         {activeTab === 'food' && <FoodSection />}
         {activeTab === 'shopping' && <ShoppingSection />}
         {activeTab === 'neighborhoods' && <NeighborhoodsSection />}
