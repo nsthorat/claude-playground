@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils'
 import { GeographySection } from './components/geography'
 import { CatsSection } from './components/CatsSection'
+import HistorySection from './components/HistorySection'
 
 const BASE_PATH = '/claude-playground'
 
@@ -2063,7 +2064,7 @@ export default function Istanbul() {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {activeTab === 'itinerary' && <ItinerarySection />}
         {activeTab === 'geography' && <GeographySection />}
-        {activeTab === 'history' && <HistoricalSection />}
+        {activeTab === 'history' && <HistorySection />}
         {activeTab === 'cats' && <CatsSection />}
         {activeTab === 'food' && <FoodSection />}
         {activeTab === 'shopping' && <ShoppingSection />}
