@@ -36,6 +36,12 @@ interface CatTopic {
   summary: string
   content: ReactNode[]
   highlights?: { label: string; value: string }[]
+  image?: {
+    url: string
+    alt: string
+    caption: string
+    credit?: string
+  }
 }
 
 const catTopics: CatTopic[] = [
@@ -44,6 +50,12 @@ const catTopics: CatTopic[] = [
     title: 'The Cat Capital of the World',
     icon: <CatIcon className="w-5 h-5" />,
     summary: 'Istanbul is home to 125,000 to over 1 million street cats who have lived alongside humans for more than two millennia.',
+    image: {
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Feral_cats_in_Istanbul_-b.jpg/800px-Feral_cats_in_Istanbul_-b.jpg',
+      alt: 'Street cats lounging on a bench in Istanbul',
+      caption: 'Feral cats relaxing on a bench in Istanbul',
+      credit: 'Wikimedia Commons'
+    },
     content: [
       <p key="1">
         <strong>Istanbul is the undisputed cat capital of the world</strong>, home to an estimated{' '}
@@ -197,6 +209,12 @@ const catTopics: CatTopic[] = [
     title: 'Population & Demographics',
     icon: <Users className="w-5 h-5" />,
     summary: 'Official estimates range from 125,000 to over 1 million street cats across the city.',
+    image: {
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Red_Turkish_Van_Male_Tom.png/800px-Red_Turkish_Van_Male_Tom.png',
+      alt: 'A Turkish Van cat with distinctive coloring',
+      caption: 'Turkish Van - a native breed known for its love of water',
+      credit: 'Wikimedia Commons'
+    },
     content: [
       <p key="1">
         <Source href="https://www.ibb.istanbul/en">Istanbul Metropolitan Municipality</Source> (2018) estimates approximately 165,000 stray cats. The Istanbul Chamber of Veterinary Surgeons suggests over 200,000 cats. Animal rescuers' assessments (2024-2025) indicate actual numbers likely more than double official figures.
@@ -278,6 +296,12 @@ const catTopics: CatTopic[] = [
     title: 'Famous Istanbul Cats',
     icon: <Star className="w-5 h-5" />,
     summary: 'From Tombili\'s bronze statue to Gli\'s 118,000 Instagram followers, Istanbul\'s cats are global celebrities.',
+    image: {
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Tombili_the_cat_n2.jpg/800px-Tombili_the_cat_n2.jpg',
+      alt: 'Tombili the cat in her iconic lounging pose',
+      caption: 'The iconic photo of Tombili that went viral worldwide',
+      credit: 'Wikimedia Commons'
+    },
     content: [
       <p key="1">
         <strong>TOMBILI:</strong>{' '}
@@ -528,6 +552,24 @@ export function CatsSection() {
             {/* Expanded Content */}
             {expandedTopic === topic.id && (
               <div className="px-4 pb-4 space-y-4">
+                {/* Image */}
+                {topic.image && (
+                  <div className="rounded-lg overflow-hidden border border-white/10">
+                    <img
+                      src={topic.image.url}
+                      alt={topic.image.alt}
+                      className="w-full h-48 object-cover"
+                      loading="lazy"
+                    />
+                    <div className="bg-white/5 px-3 py-2">
+                      <p className="text-xs text-text-secondary">{topic.image.caption}</p>
+                      {topic.image.credit && (
+                        <p className="text-xs text-text-muted mt-0.5">Photo: {topic.image.credit}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Highlights */}
                 {topic.highlights && (
                   <div className="grid grid-cols-3 gap-2">
