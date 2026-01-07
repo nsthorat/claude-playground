@@ -2,7 +2,7 @@ import { useState, ReactNode } from 'react'
 import {
   ChevronDown, ChevronUp, Heart, MapPin, Calendar,
   Shield, Users, Camera, AlertTriangle, Building2,
-  BookOpen, TrendingUp, Scale, Sparkles,
+  BookOpen, TrendingUp, Scale, Sparkles, Clock,
   Star, ExternalLink
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -262,6 +262,48 @@ const catTopics: CatTopic[] = [
       { label: 'Hospitals', value: '6' },
       { label: 'Veterinarians', value: '79' },
       { label: 'Rabies Cases', value: '0 since 2016' }
+    ]
+  },
+  {
+    id: 'lifespan',
+    title: 'Lifespan & Survival',
+    icon: <Clock className="w-5 h-5" />,
+    summary: 'Street cats face harsh realities: 2-5 years without care, but well-fed colony cats can live 10-15 years.',
+    content: [
+      <p key="1">
+        <strong>THE HARSH REALITY:</strong> The average lifespan of a stray cat varies dramatically based on circumstances. According to{' '}
+        <Source href="https://www.feralcatproject.org/myths-controversies">research compiled by the Feral Cat Spay/Neuter Project</Source>, a solitary, un-neutered feral cat has an expected lifespan of just <strong>2-3 years</strong>. However, cats in managed colonies with regular feeding can live <strong>10-15 years</strong>—comparable to indoor pets.
+      </p>,
+      <p key="2">
+        <strong>INDOOR VS OUTDOOR:</strong> The contrast is stark. Indoor cats typically live{' '}
+        <Source href="https://khpet.com/blogs/cats/how-long-do-outdoor-cats-live-indoor-vs-outdoor-cats">12-18 years on average</Source>, with some reaching their 20s. Outdoor cats face a "constant barrage of environmental threats" including traffic, disease, fighting, and predators. A{' '}
+        <Source href="https://phys.org/news/2025-04-road-traffic-accidents-pet-cat.html">UK study found</Source> that <strong>road traffic accidents are the leading cause of death</strong> for cats under 8 years old (45.6% of deaths).
+      </p>,
+      <p key="3">
+        <strong>KITTEN MORTALITY:</strong> The greatest tragedy is kitten survival rates. According to{' '}
+        <Source href="https://www.saveacat.org/feral-kittens.html">Alley Cat Rescue</Source>, <strong>75-80% of feral kittens die</strong> before reaching 6 months of age from disease, exposure, malnutrition, or predation. Nearly half die within the first 4 weeks. This harsh reality is why TNR programs focus heavily on preventing births.
+      </p>,
+      <p key="4">
+        <strong>ISTANBUL'S ADVANTAGE:</strong> Istanbul's community care model significantly improves these odds. A{' '}
+        <Source href="https://humanepro.org/page/community-cats-scientific-studies-and-data">University of Florida study</Source> found that <strong>83% of cats in managed TNR colonies</strong> were still alive after 6+ years. With Istanbul's network of feeding stations, kedi annesi caretakers, and free municipal veterinary care, street cats here likely have among the best survival rates of any urban feral population.
+      </p>,
+      <p key="5">
+        <strong>DISEASE PREVALENCE:</strong> A{' '}
+        <Source href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10829192/">peer-reviewed Istanbul study</Source> found FIV (feline immunodeficiency virus) affects <strong>11-22% of cats</strong>, while FeLV (feline leukemia) is relatively rare at 1-7%. The higher FIV rate is attributed to more cats having outdoor access and fewer being neutered historically. Neutering through TNR reduces fighting and thus disease transmission.
+      </p>,
+      <p key="6">
+        <strong>THE RECORD HOLDERS:</strong> For perspective, the{' '}
+        <Source href="https://www.guinnessworldrecords.com/world-records/oldest-cat-ever">oldest cat ever recorded</Source> was <strong>Creme Puff</strong>, who lived an astonishing <strong>38 years and 3 days</strong> (1967-2005) in Austin, Texas. The current oldest living cat is{' '}
+        <Source href="https://en.wikipedia.org/wiki/Flossie_(cat)">Flossie</Source> in the UK, who turned 30 in December 2025.
+      </p>,
+      <p key="7">
+        <strong>CAT YEARS TO HUMAN YEARS:</strong> Cats age rapidly in their first two years. The first year equals roughly <strong>15 human years</strong>, and year two adds another 9 (so a 2-year-old cat is ~24 in human years). After that, each cat year equals about 4 human years. So a 10-year-old street cat who has survived against the odds is roughly <strong>56 in human years</strong>—truly a survivor.
+      </p>
+    ],
+    highlights: [
+      { label: 'Without Care', value: '2-3 years' },
+      { label: 'With Colony Care', value: '10-15 years' },
+      { label: 'Kitten Mortality', value: '75-80%' }
     ]
   },
   {
