@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "mapbox-gl": "^3.17.0",
+    "mp4-muxer": "^5.2.2",
     "postprocessing": "^6.38.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
