@@ -322,6 +322,14 @@ Deployment is fully automated via GitHub Actions. When you push to `main`, the w
 
 **PR Previews:** Cloudflare Pages is connected for automatic PR preview deployments. See [cloudflare-previews.md](./cloudflare-previews.md) for setup instructions.
 
+**IMPORTANT: Sync package-lock.json after adding dependencies.** Cloudflare uses npm, not bun. After running `bun add <package>`, you MUST run:
+
+```bash
+npm install --package-lock-only
+```
+
+Then commit both `bun.lock` and `package-lock.json`. Without this, Cloudflare preview builds will fail.
+
 **No need to commit build artifacts** - the `docs/` folder is gitignored and built in CI.
 
 URL: https://nikubaba.com/claude-playground/
