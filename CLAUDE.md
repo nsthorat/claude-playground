@@ -322,6 +322,14 @@ Deployment is fully automated via GitHub Actions. When you push to `main`, the w
 
 **PR Previews:** Cloudflare Pages is connected for automatic PR preview deployments. See [cloudflare-previews.md](./cloudflare-previews.md) for setup instructions.
 
+**IMPORTANT: Sync package-lock.json after adding dependencies.** Cloudflare uses npm, not bun. After running `bun add <package>`, you MUST run:
+
+```bash
+npm install --package-lock-only
+```
+
+Then commit both `bun.lock` and `package-lock.json`. Without this, Cloudflare preview builds will fail.
+
 **No need to commit build artifacts** - the `docs/` folder is gitignored and built in CI.
 
 URL: https://nikubaba.com/claude-playground/
@@ -334,13 +342,33 @@ URL: https://nikubaba.com/claude-playground/
 2. **Check for console errors** - the app must load without errors
 3. **Take screenshots** to visually verify the UI renders correctly
 
+**IMPORTANT: Playwright Launch Args for Claude Code Environment**
+
+Always use these launch args to avoid crashes in sandboxed/containerized environments:
+
+```ts
+const browser = await chromium.launch({
+  headless: true,
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--single-process',  // Critical for constrained environments
+  ]
+})
+```
+
 Example test script (`scripts/test-my-app.ts`):
 
 ```ts
 import { chromium } from 'playwright'
 
 async function test() {
-  const browser = await chromium.launch({ headless: true })
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process']
+  })
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } })
 
   // Capture console errors

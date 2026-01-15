@@ -33,6 +33,7 @@ export default defineConfig({
         'sensory-polyrhythm-garden': resolve(__dirname, 'sensory-experiences/polyrhythm-garden/index.html'),
         'sensory-glass-and-steel': resolve(__dirname, 'sensory-experiences/glass-and-steel/index.html'),
         'sensory-glitch-garden': resolve(__dirname, 'sensory-experiences/glitch-garden/index.html'),
+        wordblip: resolve(__dirname, 'wordblip/index.html'),
       },
     },
   },
